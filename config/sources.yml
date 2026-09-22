@@ -1,0 +1,389 @@
+version: 1
+updated_at: "2026-09-22"
+policy:
+  coverage_days: 7
+  primary_sources_required: true
+  store_full_article_text: false
+  use_other_newsletters_for_discovery_only: true
+  canonicalize_urls: true
+  deduplicate_by:
+    - canonical_url
+    - normalized_title
+    - event_date
+sources:
+  - id: openai-news
+    name: OpenAI News
+    category: models-api
+    authority: primary
+    method: rss
+    url: "https://openai.com/news/rss.xml"
+    use: Model, API, product, and research announcements
+
+  - id: openai-agents-python
+    name: OpenAI Agents SDK for Python
+    category: agents
+    authority: primary
+    method: github-releases-api
+    url: "https://api.github.com/repos/openai/openai-agents-python/releases?per_page=20"
+    use: SDK releases and breaking changes
+
+  - id: anthropic-platform-release-notes
+    name: Anthropic Platform release notes
+    category: models-api
+    authority: primary
+    method: page-diff
+    url: "https://platform.claude.com/docs/en/release-notes/overview"
+    use: Claude API, SDK, and Console changes
+
+  - id: anthropic-news
+    name: Anthropic Newsroom
+    category: models-policy
+    authority: primary
+    method: web-page
+    url: "https://www.anthropic.com/news"
+    use: Models, safety policy, and company announcements
+
+  - id: gemini-api-changelog
+    name: Gemini API release notes
+    category: models-api
+    authority: primary
+    method: markdown
+    url: "https://ai.google.dev/gemini-api/docs/changelog.md.txt"
+    use: API changes, models, deprecations, and breaking changes
+
+  - id: google-deepmind
+    name: Google DeepMind Blog
+    category: research-models
+    authority: primary
+    method: rss
+    url: "https://deepmind.google/blog/rss.xml"
+    use: Model and research announcements
+
+  - id: google-ai-blog
+    name: Google AI Blog
+    category: research-models
+    authority: primary
+    method: rss
+    url: "https://blog.google/innovation-and-ai/technology/ai/rss/"
+    use: Google AI product and research news
+
+  - id: vertex-ai-release-notes
+    name: Vertex AI release notes
+    category: cloud-ai
+    authority: primary
+    method: rss
+    url: "https://docs.cloud.google.com/feeds/vertex-ai-release-notes.xml"
+    use: Managed-model, agent, evaluation, and observability changes
+
+  - id: mistral-changelog
+    name: Mistral changelog
+    category: models-api
+    authority: primary
+    method: page-diff
+    url: "https://docs.mistral.ai/resources/changelogs"
+    use: Models, API changes, deprecations, and breaking changes
+
+  - id: meta-ai-blog
+    name: Meta AI Blog
+    category: research-models
+    authority: primary
+    method: web-page
+    url: "https://ai.meta.com/blog/"
+    use: Llama and Meta research announcements
+
+  - id: hugging-face-blog
+    name: Hugging Face Blog
+    category: open-source-models
+    authority: primary-community
+    method: rss
+    url: "https://huggingface.co/blog/feed.xml"
+    use: Libraries, open models, datasets, and ecosystem changes
+
+  - id: microsoft-agent-framework
+    name: Microsoft Agent Framework Blog
+    category: agents-orchestration
+    authority: primary
+    method: rss
+    url: "https://devblogs.microsoft.com/agent-framework/feed/"
+    use: Microsoft agent SDK and orchestration updates
+
+  - id: aws-whats-new
+    name: AWS What's New
+    category: aws-releases
+    authority: primary
+    method: rss
+    url: "https://aws.amazon.com/about-aws/whats-new/recent/feed/"
+    use: GA and preview launches, regions, and feature changes
+    filters:
+      - Bedrock
+      - AgentCore
+      - SageMaker
+      - IAM
+      - observability
+
+  - id: aws-machine-learning-blog
+    name: AWS Machine Learning Blog
+    category: bedrock-ai
+    authority: primary-guidance
+    method: rss
+    url: "https://aws.amazon.com/blogs/machine-learning/feed/"
+    use: Bedrock patterns, agents, RAG, and model integrations
+
+  - id: aws-news-blog
+    name: AWS News Blog
+    category: aws-releases
+    authority: primary
+    method: rss
+    url: "https://aws.amazon.com/blogs/aws/feed/"
+    use: Major service announcements and launch summaries
+
+  - id: aws-devops-blog
+    name: AWS DevOps Blog
+    category: devops
+    authority: primary-guidance
+    method: rss
+    url: "https://aws.amazon.com/blogs/devops/feed/"
+    use: CI/CD, infrastructure as code, operations, and agentic DevOps
+
+  - id: aws-security-blog
+    name: AWS Security Blog
+    category: security
+    authority: primary-guidance
+    method: rss
+    url: "https://aws.amazon.com/blogs/security/feed/"
+    use: IAM, threat detection, Bedrock security, and governance
+
+  - id: bedrock-document-history
+    name: Amazon Bedrock document history
+    category: bedrock
+    authority: primary
+    method: page-diff
+    url: "https://docs.aws.amazon.com/bedrock/latest/userguide/bedrock-ug-doc-history.html"
+    use: Bedrock documentation and capability changes
+
+  - id: agentcore-release-notes
+    name: Amazon Bedrock AgentCore release notes
+    category: agent-infrastructure
+    authority: primary
+    method: page-diff
+    url: "https://docs.aws.amazon.com/bedrock-agentcore/latest/devguide/release-notes.html"
+    use: Runtime, gateway, memory, identity, and tooling changes
+
+  - id: agentcore-cli
+    name: AgentCore CLI
+    category: agent-infrastructure
+    authority: primary
+    method: github-releases-api
+    url: "https://api.github.com/repos/aws/agentcore-cli/releases?per_page=20"
+    use: CLI releases
+
+  - id: agentcore-python-sdk
+    name: Amazon Bedrock AgentCore Python SDK
+    category: agent-infrastructure
+    authority: primary
+    method: github-releases-api
+    url: "https://api.github.com/repos/aws/bedrock-agentcore-sdk-python/releases?per_page=20"
+    use: SDK changes, fixes, and compatibility
+
+  - id: strands-agents
+    name: Strands Agents SDK
+    category: agents
+    authority: primary
+    method: github-releases-api
+    url: "https://api.github.com/repos/strands-agents/sdk-python/releases?per_page=20"
+    use: AWS-adjacent agent framework releases
+
+  - id: mcp-specification
+    name: Model Context Protocol specification
+    category: standards
+    authority: authoritative-project
+    method: github-releases-api
+    url: "https://api.github.com/repos/modelcontextprotocol/specification/releases?per_page=20"
+    use: Protocol revisions and compatibility changes
+
+  - id: mcp-reference-servers
+    name: MCP reference servers
+    category: standards
+    authority: authoritative-project
+    method: github-releases-api
+    url: "https://api.github.com/repos/modelcontextprotocol/servers/releases?per_page=20"
+    use: Reference server additions and changes
+
+  - id: mcp-python-sdk
+    name: MCP Python SDK
+    category: standards
+    authority: authoritative-project
+    method: github-releases-api
+    url: "https://api.github.com/repos/modelcontextprotocol/python-sdk/releases?per_page=20"
+    use: Python implementation changes
+
+  - id: mcp-typescript-sdk
+    name: MCP TypeScript SDK
+    category: standards
+    authority: authoritative-project
+    method: github-releases-api
+    url: "https://api.github.com/repos/modelcontextprotocol/typescript-sdk/releases?per_page=20"
+    use: TypeScript implementation changes
+
+  - id: a2a-protocol
+    name: Agent2Agent protocol
+    category: standards
+    authority: authoritative-project
+    method: github-releases-api
+    url: "https://api.github.com/repos/a2aproject/A2A/releases?per_page=20"
+    use: Agent interoperability and specification changes
+
+  - id: langgraph
+    name: LangGraph
+    category: orchestration
+    authority: primary
+    method: github-releases-api
+    url: "https://api.github.com/repos/langchain-ai/langgraph/releases?per_page=20"
+    use: Durable-agent orchestration releases
+
+  - id: autogen
+    name: Microsoft AutoGen
+    category: orchestration
+    authority: primary
+    method: github-releases-api
+    url: "https://api.github.com/repos/microsoft/autogen/releases?per_page=20"
+    use: Framework releases and migration changes
+
+  - id: google-adk-python
+    name: Google Agent Development Kit for Python
+    category: agents
+    authority: primary
+    method: github-releases-api
+    url: "https://api.github.com/repos/google/adk-python/releases?per_page=20"
+    use: Agent Development Kit releases
+
+  - id: crewai
+    name: CrewAI
+    category: agents
+    authority: primary
+    method: github-releases-api
+    url: "https://api.github.com/repos/crewAIInc/crewAI/releases?per_page=20"
+    use: Multi-agent framework releases
+
+  - id: github-changelog
+    name: GitHub Changelog
+    category: developer-platform
+    authority: primary
+    method: rss
+    url: "https://github.blog/changelog/feed/"
+    use: Actions, Copilot, security, and platform changes
+
+  - id: kubernetes-blog
+    name: Kubernetes Blog
+    category: cloud-native
+    authority: official-project
+    method: rss
+    url: "https://kubernetes.io/feed.xml"
+    use: Releases, security, and operational changes
+
+  - id: opentelemetry-blog
+    name: OpenTelemetry Blog
+    category: observability
+    authority: official-project
+    method: rss
+    url: "https://opentelemetry.io/blog/index.xml"
+    use: GenAI semantic conventions, tracing, and standards
+
+  - id: opentelemetry-python
+    name: OpenTelemetry Python
+    category: observability
+    authority: primary
+    method: github-releases-api
+    url: "https://api.github.com/repos/open-telemetry/opentelemetry-python/releases?per_page=20"
+    use: SDK and API releases affecting agent telemetry
+
+  - id: mlflow
+    name: MLflow
+    category: ai-operations
+    authority: primary
+    method: github-releases-api
+    url: "https://api.github.com/repos/mlflow/mlflow/releases?per_page=20"
+    use: Agent evaluation, tracing, and model operations
+
+  - id: cisa-kev
+    name: CISA Known Exploited Vulnerabilities
+    category: security
+    authority: government
+    method: json
+    url: "https://www.cisa.gov/sites/default/files/feeds/known_exploited_vulnerabilities.json"
+    use: Exploited vulnerabilities relevant to the monitored stack
+
+  - id: cisa-advisories
+    name: CISA cybersecurity advisories
+    category: security
+    authority: government
+    method: rss
+    url: "https://www.cisa.gov/cybersecurity-advisories/all.xml"
+    use: Active campaigns and infrastructure advisories
+
+  - id: nvd-cve-api
+    name: NVD CVE API
+    category: security
+    authority: government
+    method: api
+    url: "https://services.nvd.nist.gov/rest/json/cves/2.0"
+    use: CVE metadata, severity, and product matching
+    caveat: Rate limited without an API key
+
+  - id: osv-api
+    name: OSV API
+    category: security
+    authority: authoritative-database
+    method: post-api
+    url: "https://api.osv.dev/v1/query"
+    use: Package and version-aware vulnerability checks
+
+  - id: arxiv-api
+    name: arXiv API
+    category: research
+    authority: primary-index
+    method: atom-api
+    url: "https://export.arxiv.org/api/query"
+    use: AI, machine learning, software engineering, agents, and evaluation research
+
+  - id: openalex
+    name: OpenAlex
+    category: research-discovery
+    authority: scholarly-index
+    method: api
+    url: "https://api.openalex.org/works"
+    use: Citation context and scholarly deduplication
+
+  - id: infoq-ai
+    name: InfoQ AI, ML, and Data Engineering
+    category: secondary-discovery
+    authority: reputable-secondary
+    method: rss
+    url: "https://feed.infoq.com/ai-ml-data-eng/"
+    use: Discovery and practitioner commentary
+    caveat: Never use as the sole source for a release claim
+
+  - id: new-stack-ai
+    name: The New Stack AI
+    category: secondary-discovery
+    authority: reputable-secondary
+    method: rss
+    url: "https://thenewstack.io/category/ai/feed/"
+    use: Operations-oriented discovery
+    caveat: Label sponsored content and verify releases against primary sources
+
+  - id: bleepingcomputer
+    name: BleepingComputer
+    category: secondary-security
+    authority: reputable-secondary
+    method: rss
+    url: "https://www.bleepingcomputer.com/feed/"
+    use: Fast incident and exploitation discovery
+    caveat: Confirm with a vendor advisory, CISA, or CVE record
+reuse_rules:
+  - Store metadata and original summaries, not complete feed or article bodies.
+  - Keep direct quotations exceptional, short, attributed, and linked.
+  - Public availability and RSS access do not grant republication rights.
+  - Use other newsletters to discover sources or attribute distinctive commentary; do not copy their wording, issue structure, or exclusive reporting.
+  - Record repository licenses, but do not assume a code license covers logos, documentation, release-note prose, or linked assets.
+  - Require a primary release, documentation page, repository, paper, specification, or advisory for material factual claims.
