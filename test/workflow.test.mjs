@@ -70,3 +70,41 @@ test('n8n renderer enforces initial revision 1 and contiguous corrections', asyn
     /must be 2/i,
   );
 });
+
+test('n8n renderer validates HTTPS URLs without relying on the sandbox URL global', async () => {
+  const issue = validIssue();
+  const manifest = Buffer.from(JSON.stringify({ version: 1, issues: [] })).toString('base64');
+  const $input = { first: () => ({ json: { content: manifest } }) };
+  const $ = () => ({ first: () => ({ json: { mode: 'dry_run', issue } }) });
+  const originalUrl = globalThis.URL;
+  try {
+    globalThis.URL = undefined;
+    const [result] = await render($input, $);
+    assert.equal(result.json.issue_id, issue.issue_id);
+  } finally {
+    globalThis.URL = originalUrl;
+  }
+});
+
+test('n8n renderer rejects schema-invalid enums, timestamps, and calendar dates', async () => {
+  const run = async (issue) => {
+    const manifest = Buffer.from(JSON.stringify({ version: 1, issues: [] })).toString('base64');
+    const $input = { first: () => ({ json: { content: manifest } }) };
+    const $ = () => ({ first: () => ({ json: { mode: 'dry_run', issue } }) });
+    return render($input, $);
+  };
+
+  await assert.rejects(() => run(validIssue({ generated_at: 'not-a-date' })), /generated_at/i);
+  const invalidStatus = validIssue();
+  invalidStatus.developments[0].status = 'invalid';
+  await assert.rejects(() => run(invalidStatus), /status/i);
+  const invalidConfidence = validIssue();
+  invalidConfidence.developments[0].confidence = 'certain';
+  await assert.rejects(() => run(invalidConfidence), /confidence/i);
+  const invalidEffort = validIssue();
+  invalidEffort.bring_to_work[0].effort = 'tiny';
+  await assert.rejects(() => run(invalidEffort), /effort/i);
+  const impossibleDate = validIssue();
+  impossibleDate.developments[0].event_date = '2026-02-31';
+  await assert.rejects(() => run(impossibleDate), /event_date/i);
+});

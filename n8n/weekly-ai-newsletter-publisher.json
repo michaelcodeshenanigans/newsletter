@@ -12,7 +12,7 @@
           "responseMode": "responseNode",
           "options": {}
         },
-        "id": "ca37d7f9-5a89-45a4-9559-083ebcf55c35",
+        "id": "036e854b-0bdc-4cc8-a775-d04bd8d626e8",
         "name": "Newsletter Webhook",
         "type": "n8n-nodes-base.webhook",
         "typeVersion": 2.1,
@@ -33,7 +33,7 @@
           "mode": "runOnceForAllItems",
           "jsCode": "\nconst incoming = $input.first().json;\nconst body = incoming.body ?? incoming;\nif (!body || typeof body !== 'object' || !body.issue) throw new Error('Request body must contain issue');\nconst mode = body.mode ?? 'dry_run';\nif (!['dry_run', 'publish'].includes(mode)) throw new Error('mode must be dry_run or publish');\nreturn [{ json: { mode, issue: body.issue } }];"
         },
-        "id": "99399afd-61ee-4932-ba0a-925bf8f9fa1e",
+        "id": "a53a96fa-bf37-4e6c-b0b9-ef5b487018cc",
         "name": "Validate Request",
         "type": "n8n-nodes-base.code",
         "typeVersion": 2,
@@ -63,7 +63,7 @@
           },
           "options": {}
         },
-        "id": "c4ea57bd-5f14-4169-a9da-32c5a1c2c522",
+        "id": "dcbbd4a3-c77d-4aec-9922-f33b6f43975b",
         "name": "Get Main Ref",
         "type": "n8n-nodes-base.httpRequest",
         "typeVersion": 4.5,
@@ -99,7 +99,7 @@
           },
           "options": {}
         },
-        "id": "5d44bd46-0f18-425f-966b-bb9d23c324c0",
+        "id": "6dbfd756-a371-45dc-9d62-ef04a49e1e08",
         "name": "Get Main Commit",
         "type": "n8n-nodes-base.httpRequest",
         "typeVersion": 4.5,
@@ -135,7 +135,7 @@
           },
           "options": {}
         },
-        "id": "41c84f73-1338-49d4-8f0d-71019a1a6d77",
+        "id": "7c979ff0-50a2-46cc-a473-f4994dcfbaa7",
         "name": "Get Manifest",
         "type": "n8n-nodes-base.httpRequest",
         "typeVersion": 4.5,
@@ -153,9 +153,9 @@
       {
         "parameters": {
           "mode": "runOnceForAllItems",
-          "jsCode": "return await (async function render($input, $) {\nconst envelope = $('Validate Request').first().json;\nconst manifestResponse = $input.first().json;\n\nfunction fail(message) { throw new Error(message); }\nfunction assert(condition, message) { if (!condition) fail(message); }\nfunction text(value, field, min = 1) { assert(typeof value === 'string' && value.trim().length >= min, `${field} is invalid`); }\nfunction date(value) { return typeof value === 'string' && /^\\d{4}-\\d{2}-\\d{2}$/.test(value) && !Number.isNaN(Date.parse(`${value}T00:00:00Z`)); }\nfunction https(value) { try { return new URL(value).protocol === 'https:'; } catch { return false; } }\nfunction esc(value) { return String(value).replaceAll('&','&amp;').replaceAll('<','&lt;').replaceAll('>','&gt;').replaceAll('\"','&quot;').replaceAll(\"'\",'&#39;'); }\nfunction stable(value) {\n  if (Array.isArray(value)) return `[${value.map(stable).join(',')}]`;\n  if (value && typeof value === 'object') return `{${Object.keys(value).sort().map((key) => `${JSON.stringify(key)}:${stable(value[key])}`).join(',')}}`;\n  return JSON.stringify(value);\n}\n\n// Compact synchronous SHA-256 implementation for deterministic idempotency.\nfunction sha256(ascii) {\n  function rightRotate(value, amount) { return (value >>> amount) | (value << (32 - amount)); }\n  const mathPow = Math.pow;\n  const maxWord = mathPow(2, 32);\n  const lengthProperty = 'length';\n  let i, j;\n  let result = '';\n  const words = [];\n  const asciiBitLength = ascii[lengthProperty] * 8;\n  let hash = sha256.h = sha256.h || [];\n  const k = sha256.k = sha256.k || [];\n  let primeCounter = k[lengthProperty];\n  const isComposite = {};\n  for (let candidate = 2; primeCounter < 64; candidate++) {\n    if (!isComposite[candidate]) {\n      for (i = 0; i < 313; i += candidate) isComposite[i] = candidate;\n      hash[primeCounter] = (mathPow(candidate, 0.5) * maxWord) | 0;\n      k[primeCounter++] = (mathPow(candidate, 1 / 3) * maxWord) | 0;\n    }\n  }\n  ascii += '\\x80';\n  while (ascii[lengthProperty] % 64 - 56) ascii += '\\x00';\n  for (i = 0; i < ascii[lengthProperty]; i++) {\n    j = ascii.charCodeAt(i);\n    assert(j >> 8 === 0, 'Issue JSON must use UTF-8 characters supported by the renderer');\n    words[i >> 2] |= j << ((3 - i) % 4) * 8;\n  }\n  words[words[lengthProperty]] = ((asciiBitLength / maxWord) | 0);\n  words[words[lengthProperty]] = (asciiBitLength);\n  for (j = 0; j < words[lengthProperty];) {\n    const w = words.slice(j, j += 16);\n    const oldHash = hash.slice(0);\n    hash = hash.slice(0, 8);\n    for (i = 0; i < 64; i++) {\n      const i2 = i + j;\n      const w15 = w[i - 15], w2 = w[i - 2];\n      const a = hash[0], e = hash[4];\n      const temp1 = hash[7]\n        + (rightRotate(e, 6) ^ rightRotate(e, 11) ^ rightRotate(e, 25))\n        + ((e & hash[5]) ^ ((~e) & hash[6]))\n        + k[i]\n        + (w[i] = i < 16 ? w[i] : (w[i - 16]\n          + (rightRotate(w15, 7) ^ rightRotate(w15, 18) ^ (w15 >>> 3))\n          + w[i - 7]\n          + (rightRotate(w2, 17) ^ rightRotate(w2, 19) ^ (w2 >>> 10))) | 0);\n      const temp2 = (rightRotate(a, 2) ^ rightRotate(a, 13) ^ rightRotate(a, 22))\n        + ((a & hash[1]) ^ (a & hash[2]) ^ (hash[1] & hash[2]));\n      hash = [(temp1 + temp2) | 0].concat(hash);\n      hash[4] = (hash[4] + temp1) | 0;\n      hash.pop();\n    }\n    for (i = 0; i < 8; i++) hash[i] = (hash[i] + oldHash[i]) | 0;\n  }\n  for (i = 0; i < 8; i++) {\n    for (j = 3; j + 1; j--) {\n      const b = (hash[i] >> (j * 8)) & 255;\n      result += (b < 16 ? '0' : '') + b.toString(16);\n    }\n  }\n  return result;\n}\n\nconst issue = envelope.issue;\nassert(issue && typeof issue === 'object', 'issue must be an object');\nassert(issue.schema_version === 'newsletter.v1', 'schema_version must be newsletter.v1');\nassert(/^\\d{4}-\\d{2}-\\d{2}$/.test(issue.issue_id || ''), 'issue_id must use YYYY-MM-DD');\nassert(Number.isInteger(issue.revision) && issue.revision >= 1, 'revision must be a positive integer');\nassert(issue.timezone === 'Asia/Jerusalem', 'timezone must be Asia/Jerusalem');\nassert(issue.coverage && date(issue.coverage.start) && date(issue.coverage.end), 'coverage dates are invalid');\nassert(issue.coverage.start <= issue.coverage.end, 'coverage start is after coverage end');\nassert(issue.issue_id === issue.coverage.end, 'issue_id must equal coverage end');\ntext(issue.title, 'title', 10);\ntext(issue.summary, 'summary', 40);\ntext(issue.telegram_text, 'telegram_text', 200);\nassert(Array.isArray(issue.citations) && issue.citations.length >= 3, 'at least three citations are required');\nconst cited = new Set();\nfor (const [index, source] of issue.citations.entries()) {\n  assert(/^src-\\d{2,3}$/.test(source.id || ''), `citations[${index}].id is invalid`);\n  assert(!cited.has(source.id), `duplicate citation ${source.id}`);\n  cited.add(source.id);\n  text(source.title, `citations[${index}].title`, 3);\n  text(source.publisher, `citations[${index}].publisher`, 2);\n  assert(https(source.url), `citations[${index}].url must be HTTPS`);\n  assert(source.published_at === null || date(source.published_at), `citations[${index}].published_at is invalid`);\n}\nfunction citationIds(ids, field) {\n  assert(Array.isArray(ids) && ids.length, `${field} must not be empty`);\n  for (const id of ids) assert(cited.has(id), `${field} references undeclared citation ${id}`);\n}\nassert(Array.isArray(issue.developments) && issue.developments.length >= 3 && issue.developments.length <= 6, 'developments must have 3 to 6 items');\nfor (const [index, item] of issue.developments.entries()) {\n  text(item.title, `developments[${index}].title`, 8);\n  assert(date(item.event_date), `developments[${index}].event_date is invalid`);\n  assert(item.event_date >= issue.coverage.start && item.event_date <= issue.coverage.end, `developments[${index}].event_date is outside coverage`);\n  for (const key of ['what_changed','why_it_matters','platform_impact','recommended_action','watchouts']) text(item[key], `developments[${index}].${key}`, 5);\n  assert(Number.isInteger(item.score) && item.score >= 0 && item.score <= 21, `developments[${index}].score is invalid`);\n  citationIds(item.citation_ids, `developments[${index}].citation_ids`);\n}\nassert(Array.isArray(issue.devops_impacts) && issue.devops_impacts.length >= 2, 'at least two DevOps impacts are required');\nissue.devops_impacts.forEach((item, index) => { text(item.text, `devops_impacts[${index}].text`, 20); citationIds(item.citation_ids, `devops_impacts[${index}].citation_ids`); });\nassert(Array.isArray(issue.bring_to_work) && issue.bring_to_work.length >= 2, 'at least two bring-to-work items are required');\nissue.bring_to_work.forEach((item, index) => { text(item.title, `bring_to_work[${index}].title`, 4); text(item.next_step, `bring_to_work[${index}].next_step`, 10); citationIds(item.citation_ids, `bring_to_work[${index}].citation_ids`); });\nassert(Array.isArray(issue.watchouts) && issue.watchouts.length >= 1, 'at least one watchout is required');\nissue.watchouts.forEach((item, index) => { text(item.text, `watchouts[${index}].text`, 10); citationIds(item.citation_ids, `watchouts[${index}].citation_ids`); });\n\nlet manifest = { version: 1, issues: [] };\nif (manifestResponse && typeof manifestResponse.content === 'string') {\n  manifest = JSON.parse(Buffer.from(manifestResponse.content.replace(/\\n/g, ''), 'base64').toString('utf8'));\n}\nif (!Array.isArray(manifest.issues)) manifest = { version: 1, issues: [] };\n\nconst byId = new Map(issue.citations.map((source) => [source.id, source]));\nconst links = (ids) => ids.map((id) => `[${id}](${byId.get(id).url})`).join(' ');\nconst markdown = ['---', `title: \"${issue.title.replaceAll('\"','\\\\\"')}\"`, `date: ${issue.generated_at}`, `issue_id: ${issue.issue_id}`, `revision: ${issue.revision}`, '---', '', `# ${issue.title}`, '', `_${issue.coverage.start} through ${issue.coverage.end} · Revision ${issue.revision}_`, '', issue.summary, '', '## What changed', ''];\nfor (const item of issue.developments) {\n  markdown.push(`### ${item.title}`, '', `**Status:** ${item.status.replaceAll('_',' ')} · **Event date:** ${item.event_date} · **Confidence:** ${item.confidence} · **Score:** ${item.score}/21`, '', `**What changed:** ${item.what_changed}`, '', `**Why it matters:** ${item.why_it_matters}`, '', `**Platform impact:** ${item.platform_impact}`, '', `**Recommended action:** ${item.recommended_action}`, '', `**Watchouts:** ${item.watchouts}`, '', `Sources: ${links(item.citation_ids)}`, '');\n}\nmarkdown.push('## DevOps / platform impact', '');\nfor (const item of issue.devops_impacts) markdown.push(`- **${item.area}:** ${item.text} ${links(item.citation_ids)}`);\nmarkdown.push('', '## Bring to work', '');\nfor (const item of issue.bring_to_work) markdown.push(`### ${item.title}`, '', item.what, '', `- **Fit:** ${item.fit}`, `- **Effort:** ${item.effort}`, `- **Next step:** ${item.next_step}`, `- **Sources:** ${links(item.citation_ids)}`, '');\nmarkdown.push('## Watchouts', '');\nfor (const item of issue.watchouts) markdown.push(`- ${item.text} ${links(item.citation_ids)}`);\nmarkdown.push('', '## Sources', '');\nfor (const source of issue.citations) markdown.push(`- **${source.id}:** [${source.title}](${source.url}), ${source.publisher}${source.published_at ? ` — ${source.published_at}` : ''} (${source.source_type})`);\nmarkdown.push('');\n\nconst contentHash = sha256(unescape(encodeURIComponent(stable(issue))));\nconst old = manifest.issues.find((entry) => entry.issue_id === issue.issue_id);\nif (!old && issue.revision !== 1) fail(`initial revision must be 1 for issue ${issue.issue_id}`);\nif (old && !(old.revision === issue.revision && old.content_hash === contentHash) && issue.revision !== old.revision + 1) {\n  fail(`next revision for issue ${issue.issue_id} must be ${old.revision + 1}`);\n}\nconst entry = { issue_id: issue.issue_id, revision: issue.revision, title: issue.title, coverage: issue.coverage, published_at: issue.generated_at, path: `issues/${issue.issue_id}.md`, content_hash: contentHash };\nconst noop = Boolean(old && old.revision === issue.revision && old.content_hash === contentHash);\nmanifest.version = 1;\nmanifest.issues = manifest.issues.filter((item) => item.issue_id !== issue.issue_id).concat(entry).sort((a,b) => b.issue_id.localeCompare(a.issue_id));\nconst site = 'https://michaelcodeshenanigans.github.io/newsletter';\nconst indexItems = manifest.issues.map((item) => `<article><h2><a href=\"${site}/issues/${esc(item.issue_id)}.html\">${esc(item.title)}</a></h2><p>${esc(item.coverage.start)} through ${esc(item.coverage.end)} · Revision ${item.revision}</p></article>`).join('');\nconst indexHtml = `<!doctype html><html lang=\"en\"><head><meta charset=\"utf-8\"><meta name=\"viewport\" content=\"width=device-width,initial-scale=1\"><title>Weekly AI &amp; Agentic Systems Newsletter</title><link rel=\"alternate\" type=\"application/rss+xml\" title=\"Newsletter RSS\" href=\"${site}/feed.xml\"><style>body{max-width:52rem;margin:3rem auto;padding:0 1rem;font:18px/1.6 system-ui,sans-serif;color:#18202a}a{color:#0757a6}article{border-top:1px solid #d8dee8;padding:1rem 0}small{color:#566}</style></head><body><header><h1>Weekly AI &amp; Agentic Systems Newsletter</h1><p>Source-grounded changes, operational implications, and practical evaluation candidates.</p></header><main>${indexItems || '<p>No issues have been published yet.</p>'}</main><footer><small><a href=\"feed.xml\">RSS feed</a> · <a href=\"https://github.com/michaelcodeshenanigans/newsletter\">Source repository</a></small></footer></body></html>\\n`;\nconst rssItems = manifest.issues.slice(0,20).map((item) => `<item><title>${esc(item.title)}</title><link>${site}/issues/${item.issue_id}.html</link><guid isPermaLink=\"true\">${site}/issues/${item.issue_id}.html</guid><pubDate>${new Date(item.published_at).toUTCString()}</pubDate><description>${esc(`Coverage ${item.coverage.start} through ${item.coverage.end}.`)}</description></item>`).join('');\nconst rss = `<?xml version=\"1.0\" encoding=\"UTF-8\"?><rss version=\"2.0\"><channel><title>Weekly AI &amp; Agentic Systems Newsletter</title><link>${site}/</link><description>Source-grounded AI and agentic systems intelligence.</description><language>en-us</language>${rssItems}</channel></rss>\\n`;\nconst files = [\n  { path: entry.path, content: `${markdown.join('\\n')}\\n` },\n  { path: `artifacts/${issue.issue_id}.v${issue.revision}.json`, content: `${JSON.stringify(issue,null,2)}\\n` },\n  { path: 'issues/manifest.json', content: `${JSON.stringify(manifest,null,2)}\\n` },\n  { path: 'index.html', content: indexHtml },\n  { path: 'feed.xml', content: rss },\n];\nreturn [{ json: { mode: envelope.mode, issue_id: issue.issue_id, revision: issue.revision, content_hash: contentHash, noop, files, commit_message: `publish: newsletter ${issue.issue_id} v${issue.revision}` } }];\n})($input, $);"
+          "jsCode": "return await (async function render($input, $) {\nconst envelope = $('Validate Request').first().json;\nconst manifestResponse = $input.first().json;\n\nfunction fail(message) { throw new Error(message); }\nfunction assert(condition, message) { if (!condition) fail(message); }\nfunction text(value, field, min = 1) { assert(typeof value === 'string' && value.trim().length >= min, `${field} is invalid`); }\nfunction date(value) {\n  if (typeof value !== 'string' || !/^\\d{4}-\\d{2}-\\d{2}$/.test(value)) return false;\n  const [year, month, day] = value.split('-').map(Number);\n  const parsed = new Date(Date.UTC(year, month - 1, day));\n  return parsed.getUTCFullYear() === year && parsed.getUTCMonth() === month - 1 && parsed.getUTCDate() === day;\n}\nfunction https(value) { return typeof value === 'string' && /^https:\\/\\/[^\\s]+$/i.test(value); }\nfunction esc(value) { return String(value).replaceAll('&','&amp;').replaceAll('<','&lt;').replaceAll('>','&gt;').replaceAll('\"','&quot;').replaceAll(\"'\",'&#39;'); }\nfunction stable(value) {\n  if (Array.isArray(value)) return `[${value.map(stable).join(',')}]`;\n  if (value && typeof value === 'object') return `{${Object.keys(value).sort().map((key) => `${JSON.stringify(key)}:${stable(value[key])}`).join(',')}}`;\n  return JSON.stringify(value);\n}\n\n// Compact synchronous SHA-256 implementation for deterministic idempotency.\nfunction sha256(ascii) {\n  function rightRotate(value, amount) { return (value >>> amount) | (value << (32 - amount)); }\n  const mathPow = Math.pow;\n  const maxWord = mathPow(2, 32);\n  const lengthProperty = 'length';\n  let i, j;\n  let result = '';\n  const words = [];\n  const asciiBitLength = ascii[lengthProperty] * 8;\n  let hash = sha256.h = sha256.h || [];\n  const k = sha256.k = sha256.k || [];\n  let primeCounter = k[lengthProperty];\n  const isComposite = {};\n  for (let candidate = 2; primeCounter < 64; candidate++) {\n    if (!isComposite[candidate]) {\n      for (i = 0; i < 313; i += candidate) isComposite[i] = candidate;\n      hash[primeCounter] = (mathPow(candidate, 0.5) * maxWord) | 0;\n      k[primeCounter++] = (mathPow(candidate, 1 / 3) * maxWord) | 0;\n    }\n  }\n  ascii += '\\x80';\n  while (ascii[lengthProperty] % 64 - 56) ascii += '\\x00';\n  for (i = 0; i < ascii[lengthProperty]; i++) {\n    j = ascii.charCodeAt(i);\n    assert(j >> 8 === 0, 'Issue JSON must use UTF-8 characters supported by the renderer');\n    words[i >> 2] |= j << ((3 - i) % 4) * 8;\n  }\n  words[words[lengthProperty]] = ((asciiBitLength / maxWord) | 0);\n  words[words[lengthProperty]] = (asciiBitLength);\n  for (j = 0; j < words[lengthProperty];) {\n    const w = words.slice(j, j += 16);\n    const oldHash = hash.slice(0);\n    hash = hash.slice(0, 8);\n    for (i = 0; i < 64; i++) {\n      const i2 = i + j;\n      const w15 = w[i - 15], w2 = w[i - 2];\n      const a = hash[0], e = hash[4];\n      const temp1 = hash[7]\n        + (rightRotate(e, 6) ^ rightRotate(e, 11) ^ rightRotate(e, 25))\n        + ((e & hash[5]) ^ ((~e) & hash[6]))\n        + k[i]\n        + (w[i] = i < 16 ? w[i] : (w[i - 16]\n          + (rightRotate(w15, 7) ^ rightRotate(w15, 18) ^ (w15 >>> 3))\n          + w[i - 7]\n          + (rightRotate(w2, 17) ^ rightRotate(w2, 19) ^ (w2 >>> 10))) | 0);\n      const temp2 = (rightRotate(a, 2) ^ rightRotate(a, 13) ^ rightRotate(a, 22))\n        + ((a & hash[1]) ^ (a & hash[2]) ^ (hash[1] & hash[2]));\n      hash = [(temp1 + temp2) | 0].concat(hash);\n      hash[4] = (hash[4] + temp1) | 0;\n      hash.pop();\n    }\n    for (i = 0; i < 8; i++) hash[i] = (hash[i] + oldHash[i]) | 0;\n  }\n  for (i = 0; i < 8; i++) {\n    for (j = 3; j + 1; j--) {\n      const b = (hash[i] >> (j * 8)) & 255;\n      result += (b < 16 ? '0' : '') + b.toString(16);\n    }\n  }\n  return result;\n}\n\nconst issue = envelope.issue;\nconst statuses = new Set(['ga','preview','limited','open_source','announced_dated','announced_undated','unconfirmed']);\nconst confidences = new Set(['high','medium','low']);\nconst efforts = new Set(['low','medium','high']);\nconst sourceTypes = new Set(['primary','paper','official-project','government','secondary']);\nconst impactAreas = new Set(['architecture','deployment','reliability','observability','security','governance','cost','developer-workflow','data-residency','vendor-coupling']);\nassert(issue && typeof issue === 'object', 'issue must be an object');\nassert(issue.schema_version === 'newsletter.v1', 'schema_version must be newsletter.v1');\nassert(/^\\d{4}-\\d{2}-\\d{2}$/.test(issue.issue_id || ''), 'issue_id must use YYYY-MM-DD');\nassert(Number.isInteger(issue.revision) && issue.revision >= 1, 'revision must be a positive integer');\nassert(typeof issue.generated_at === 'string' && !Number.isNaN(Date.parse(issue.generated_at)) && /T/.test(issue.generated_at), 'generated_at must be an ISO date-time');\nassert(issue.timezone === 'Asia/Jerusalem', 'timezone must be Asia/Jerusalem');\nassert(issue.coverage && date(issue.coverage.start) && date(issue.coverage.end), 'coverage dates are invalid');\nassert(issue.coverage.start <= issue.coverage.end, 'coverage start is after coverage end');\nassert(issue.issue_id === issue.coverage.end, 'issue_id must equal coverage end');\ntext(issue.title, 'title', 10);\ntext(issue.summary, 'summary', 40);\ntext(issue.telegram_text, 'telegram_text', 200);\nassert(Array.isArray(issue.citations) && issue.citations.length >= 3, 'at least three citations are required');\nconst cited = new Set();\nfor (const [index, source] of issue.citations.entries()) {\n  assert(/^src-\\d{2,3}$/.test(source.id || ''), `citations[${index}].id is invalid`);\n  assert(!cited.has(source.id), `duplicate citation ${source.id}`);\n  cited.add(source.id);\n  text(source.title, `citations[${index}].title`, 3);\n  text(source.publisher, `citations[${index}].publisher`, 2);\n  assert(https(source.url), `citations[${index}].url must be HTTPS`);\n  assert(source.published_at === null || date(source.published_at), `citations[${index}].published_at is invalid`);\n  assert(sourceTypes.has(source.source_type), `citations[${index}].source_type is invalid`);\n}\nfunction citationIds(ids, field) {\n  assert(Array.isArray(ids) && ids.length, `${field} must not be empty`);\n  for (const id of ids) assert(cited.has(id), `${field} references undeclared citation ${id}`);\n}\nassert(Array.isArray(issue.developments) && issue.developments.length >= 3 && issue.developments.length <= 6, 'developments must have 3 to 6 items');\nfor (const [index, item] of issue.developments.entries()) {\n  assert(/^[a-z0-9]+(?:-[a-z0-9]+)*$/.test(item.id || ''), `developments[${index}].id is invalid`);\n  text(item.title, `developments[${index}].title`, 8);\n  assert(statuses.has(item.status), `developments[${index}].status is invalid`);\n  assert(date(item.event_date), `developments[${index}].event_date is invalid`);\n  assert(item.event_date >= issue.coverage.start && item.event_date <= issue.coverage.end, `developments[${index}].event_date is outside coverage`);\n  for (const key of ['what_changed','why_it_matters','platform_impact','recommended_action','watchouts']) text(item[key], `developments[${index}].${key}`, 5);\n  assert(confidences.has(item.confidence), `developments[${index}].confidence is invalid`);\n  assert(Number.isInteger(item.score) && item.score >= 0 && item.score <= 21, `developments[${index}].score is invalid`);\n  citationIds(item.citation_ids, `developments[${index}].citation_ids`);\n}\nassert(Array.isArray(issue.devops_impacts) && issue.devops_impacts.length >= 2, 'at least two DevOps impacts are required');\nissue.devops_impacts.forEach((item, index) => { text(item.text, `devops_impacts[${index}].text`, 20); citationIds(item.citation_ids, `devops_impacts[${index}].citation_ids`); });\nassert(Array.isArray(issue.bring_to_work) && issue.bring_to_work.length >= 2, 'at least two bring-to-work items are required');\nissue.devops_impacts.forEach((item, index) => assert(impactAreas.has(item.area), `devops_impacts[${index}].area is invalid`));\nissue.bring_to_work.forEach((item, index) => { text(item.title, `bring_to_work[${index}].title`, 4); text(item.what, `bring_to_work[${index}].what`, 10); text(item.fit, `bring_to_work[${index}].fit`, 10); text(item.next_step, `bring_to_work[${index}].next_step`, 10); assert(efforts.has(item.effort), `bring_to_work[${index}].effort is invalid`); citationIds(item.citation_ids, `bring_to_work[${index}].citation_ids`); });\nassert(Array.isArray(issue.watchouts) && issue.watchouts.length >= 1, 'at least one watchout is required');\nissue.watchouts.forEach((item, index) => { text(item.text, `watchouts[${index}].text`, 10); citationIds(item.citation_ids, `watchouts[${index}].citation_ids`); });\n\nlet manifest = { version: 1, issues: [] };\nif (manifestResponse && typeof manifestResponse.content === 'string') {\n  manifest = JSON.parse(Buffer.from(manifestResponse.content.replace(/\\n/g, ''), 'base64').toString('utf8'));\n}\nif (!Array.isArray(manifest.issues)) manifest = { version: 1, issues: [] };\n\nconst byId = new Map(issue.citations.map((source) => [source.id, source]));\nconst links = (ids) => ids.map((id) => `[${id}](${byId.get(id).url})`).join(' ');\nconst markdown = ['---', `title: \"${issue.title.replaceAll('\"','\\\\\"')}\"`, `date: ${issue.generated_at}`, `issue_id: ${issue.issue_id}`, `revision: ${issue.revision}`, '---', '', `# ${issue.title}`, '', `_${issue.coverage.start} through ${issue.coverage.end} · Revision ${issue.revision}_`, '', issue.summary, '', '## What changed', ''];\nfor (const item of issue.developments) {\n  markdown.push(`### ${item.title}`, '', `**Status:** ${item.status.replaceAll('_',' ')} · **Event date:** ${item.event_date} · **Confidence:** ${item.confidence} · **Score:** ${item.score}/21`, '', `**What changed:** ${item.what_changed}`, '', `**Why it matters:** ${item.why_it_matters}`, '', `**Platform impact:** ${item.platform_impact}`, '', `**Recommended action:** ${item.recommended_action}`, '', `**Watchouts:** ${item.watchouts}`, '', `Sources: ${links(item.citation_ids)}`, '');\n}\nmarkdown.push('## DevOps / platform impact', '');\nfor (const item of issue.devops_impacts) markdown.push(`- **${item.area}:** ${item.text} ${links(item.citation_ids)}`);\nmarkdown.push('', '## Bring to work', '');\nfor (const item of issue.bring_to_work) markdown.push(`### ${item.title}`, '', item.what, '', `- **Fit:** ${item.fit}`, `- **Effort:** ${item.effort}`, `- **Next step:** ${item.next_step}`, `- **Sources:** ${links(item.citation_ids)}`, '');\nmarkdown.push('## Watchouts', '');\nfor (const item of issue.watchouts) markdown.push(`- ${item.text} ${links(item.citation_ids)}`);\nmarkdown.push('', '## Sources', '');\nfor (const source of issue.citations) markdown.push(`- **${source.id}:** [${source.title}](${source.url}), ${source.publisher}${source.published_at ? ` — ${source.published_at}` : ''} (${source.source_type})`);\nmarkdown.push('');\n\nconst contentHash = sha256(unescape(encodeURIComponent(stable(issue))));\nconst old = manifest.issues.find((entry) => entry.issue_id === issue.issue_id);\nif (!old && issue.revision !== 1) fail(`initial revision must be 1 for issue ${issue.issue_id}`);\nif (old && !(old.revision === issue.revision && old.content_hash === contentHash) && issue.revision !== old.revision + 1) {\n  fail(`next revision for issue ${issue.issue_id} must be ${old.revision + 1}`);\n}\nconst entry = { issue_id: issue.issue_id, revision: issue.revision, title: issue.title, coverage: issue.coverage, published_at: issue.generated_at, path: `issues/${issue.issue_id}.md`, content_hash: contentHash };\nconst noop = Boolean(old && old.revision === issue.revision && old.content_hash === contentHash);\nmanifest.version = 1;\nmanifest.issues = manifest.issues.filter((item) => item.issue_id !== issue.issue_id).concat(entry).sort((a,b) => b.issue_id.localeCompare(a.issue_id));\nconst site = 'https://michaelcodeshenanigans.github.io/newsletter';\nconst indexItems = manifest.issues.map((item) => `<article><h2><a href=\"${site}/issues/${esc(item.issue_id)}.html\">${esc(item.title)}</a></h2><p>${esc(item.coverage.start)} through ${esc(item.coverage.end)} · Revision ${item.revision}</p></article>`).join('');\nconst indexHtml = `<!doctype html><html lang=\"en\"><head><meta charset=\"utf-8\"><meta name=\"viewport\" content=\"width=device-width,initial-scale=1\"><title>Weekly AI &amp; Agentic Systems Newsletter</title><link rel=\"alternate\" type=\"application/rss+xml\" title=\"Newsletter RSS\" href=\"${site}/feed.xml\"><style>body{max-width:52rem;margin:3rem auto;padding:0 1rem;font:18px/1.6 system-ui,sans-serif;color:#18202a}a{color:#0757a6}article{border-top:1px solid #d8dee8;padding:1rem 0}small{color:#566}</style></head><body><header><h1>Weekly AI &amp; Agentic Systems Newsletter</h1><p>Source-grounded changes, operational implications, and practical evaluation candidates.</p></header><main>${indexItems || '<p>No issues have been published yet.</p>'}</main><footer><small><a href=\"feed.xml\">RSS feed</a> · <a href=\"https://github.com/michaelcodeshenanigans/newsletter\">Source repository</a></small></footer></body></html>\\n`;\nconst rssItems = manifest.issues.slice(0,20).map((item) => `<item><title>${esc(item.title)}</title><link>${site}/issues/${item.issue_id}.html</link><guid isPermaLink=\"true\">${site}/issues/${item.issue_id}.html</guid><pubDate>${new Date(item.published_at).toUTCString()}</pubDate><description>${esc(`Coverage ${item.coverage.start} through ${item.coverage.end}.`)}</description></item>`).join('');\nconst rss = `<?xml version=\"1.0\" encoding=\"UTF-8\"?><rss version=\"2.0\"><channel><title>Weekly AI &amp; Agentic Systems Newsletter</title><link>${site}/</link><description>Source-grounded AI and agentic systems intelligence.</description><language>en-us</language>${rssItems}</channel></rss>\\n`;\nconst files = [\n  { path: entry.path, content: `${markdown.join('\\n')}\\n` },\n  { path: `artifacts/${issue.issue_id}.v${issue.revision}.json`, content: `${JSON.stringify(issue,null,2)}\\n` },\n  { path: 'issues/manifest.json', content: `${JSON.stringify(manifest,null,2)}\\n` },\n  { path: 'index.html', content: indexHtml },\n  { path: 'feed.xml', content: rss },\n];\nreturn [{ json: { mode: envelope.mode, issue_id: issue.issue_id, revision: issue.revision, content_hash: contentHash, noop, files, commit_message: `publish: newsletter ${issue.issue_id} v${issue.revision}` } }];\n})($input, $);"
         },
-        "id": "374e5081-5f50-4d5c-9d85-97880960b993",
+        "id": "8bb2a790-5879-454b-ae26-92b4c83ecfbd",
         "name": "Validate and Render",
         "type": "n8n-nodes-base.code",
         "typeVersion": 2,
@@ -175,7 +175,7 @@
             },
             "conditions": [
               {
-                "id": "83166293-21e2-4523-a59b-8c7cd20ebdd2",
+                "id": "bdcb6878-f82a-46ee-b9a8-c221cd54fb37",
                 "leftValue": "={{ $json.mode }}",
                 "rightValue": "dry_run",
                 "operator": {
@@ -188,7 +188,7 @@
           },
           "options": {}
         },
-        "id": "5f794bee-aea7-4a9c-9fef-db505ec5ae7a",
+        "id": "f709ae57-56fb-4075-b9fc-d45f9e5fffa5",
         "name": "Dry Run?",
         "type": "n8n-nodes-base.if",
         "typeVersion": 2.3,
@@ -206,7 +206,7 @@
             "enableStreaming": false
           }
         },
-        "id": "82ade0dc-9fdc-4a83-be2e-8e347c787213",
+        "id": "20a248ef-0bbd-4f75-a7d0-34410d4689fe",
         "name": "Dry Run Response",
         "type": "n8n-nodes-base.respondToWebhook",
         "typeVersion": 1.5,
@@ -226,7 +226,7 @@
             },
             "conditions": [
               {
-                "id": "4ae2764b-0b6a-47a8-b96a-76f121e81802",
+                "id": "600e05ff-7b95-4c1a-b47b-51da7a73a94e",
                 "leftValue": "={{ $json.noop }}",
                 "rightValue": true,
                 "operator": {
@@ -239,7 +239,7 @@
           },
           "options": {}
         },
-        "id": "6f401f55-b017-41c5-b227-5c5dc543d5b2",
+        "id": "ee003de1-34ee-4989-bb4d-6ab401f9b69f",
         "name": "Already Published?",
         "type": "n8n-nodes-base.if",
         "typeVersion": 2.3,
@@ -257,7 +257,7 @@
             "enableStreaming": false
           }
         },
-        "id": "683c8cea-9045-4dd7-a5e9-3a6f77e190e4",
+        "id": "c2883b33-d60c-48eb-a2b7-57b88e64e2bd",
         "name": "Already Published Response",
         "type": "n8n-nodes-base.respondToWebhook",
         "typeVersion": 1.5,
@@ -271,7 +271,7 @@
           "mode": "runOnceForAllItems",
           "jsCode": "\nconst files = $('Validate and Render').first().json.files;\nreturn files.map((file) => ({ json: file }));"
         },
-        "id": "33c87450-69a4-4539-a00b-28a36c2aeb5e",
+        "id": "f527c614-31e5-434d-b596-aee7a1473e07",
         "name": "Expand Files",
         "type": "n8n-nodes-base.code",
         "typeVersion": 2,
@@ -304,7 +304,7 @@
           "specifyBody": "json",
           "jsonBody": "={{ { content: $json.content, encoding: 'utf-8' } }}"
         },
-        "id": "395325a5-9739-4973-9807-d50ba9aba82f",
+        "id": "7c354582-7b48-4749-a9f6-3300502e9f89",
         "name": "Create Git Blobs",
         "type": "n8n-nodes-base.httpRequest",
         "typeVersion": 4.5,
@@ -324,7 +324,7 @@
           "mode": "runOnceForAllItems",
           "jsCode": "\nconst blobs = $input.all();\nconst files = $('Expand Files').all();\nif (blobs.length !== files.length) throw new Error('Blob response count does not match publication file count');\nreturn [{ json: { tree: blobs.map((blob, index) => ({ path: files[index].json.path, mode: '100644', type: 'blob', sha: blob.json.sha })) } }];"
         },
-        "id": "d1c93aa2-2cb9-4dcf-8c3a-28111216db52",
+        "id": "2d0688c1-add9-4bf7-86d6-be3fbf05a59c",
         "name": "Assemble Git Tree",
         "type": "n8n-nodes-base.code",
         "typeVersion": 2,
@@ -357,7 +357,7 @@
           "specifyBody": "json",
           "jsonBody": "={{ { base_tree: $('Get Main Commit').first().json.tree.sha, tree: $json.tree } }}"
         },
-        "id": "911fb831-910d-4b2d-b599-67c6ee643818",
+        "id": "443887f9-6599-4976-96ed-fbeb0350d00f",
         "name": "Create Git Tree",
         "type": "n8n-nodes-base.httpRequest",
         "typeVersion": 4.5,
@@ -396,7 +396,7 @@
           "specifyBody": "json",
           "jsonBody": "={{ { message: $('Validate and Render').first().json.commit_message, tree: $json.sha, parents: [ $('Get Main Ref').first().json.object.sha ] } }}"
         },
-        "id": "819fc3ba-2f77-47c9-a402-5af883448e6f",
+        "id": "90831fa7-7576-4353-a39d-4185ab9853f4",
         "name": "Create Git Commit",
         "type": "n8n-nodes-base.httpRequest",
         "typeVersion": 4.5,
@@ -435,7 +435,7 @@
           "specifyBody": "json",
           "jsonBody": "={{ { sha: $json.sha, force: false } }}"
         },
-        "id": "2011f145-4fc0-4651-a6f1-f119484c7e9b",
+        "id": "4b1d0f4c-0d36-4bb9-9b0a-32beb683b860",
         "name": "Update Main Ref",
         "type": "n8n-nodes-base.httpRequest",
         "typeVersion": 4.5,
@@ -471,7 +471,7 @@
           },
           "options": {}
         },
-        "id": "bbf15f29-c356-437f-838f-414982d0683c",
+        "id": "abd54785-9fe3-4fa4-b1e2-18a5007f2321",
         "name": "Get Updated Ref",
         "type": "n8n-nodes-base.httpRequest",
         "typeVersion": 4.5,
@@ -507,7 +507,7 @@
           },
           "options": {}
         },
-        "id": "21bca5a9-7b7a-4208-b278-7ea2e13cb331",
+        "id": "136c20ac-cc08-4026-8b5b-5b3b82479041",
         "name": "Get Published Commit",
         "type": "n8n-nodes-base.httpRequest",
         "typeVersion": 4.5,
@@ -527,7 +527,7 @@
           "mode": "runOnceForAllItems",
           "jsCode": "\nconst expectedCommit = $('Create Git Commit').first().json.sha;\nconst expectedTree = $('Create Git Tree').first().json.sha;\nconst actualRef = $('Get Updated Ref').first().json.object.sha;\nconst actualTree = $input.first().json.tree.sha;\nif (actualRef !== expectedCommit) throw new Error('Published ref verification failed');\nif (actualTree !== expectedTree) throw new Error('Published tree verification failed');\nreturn [{ json: { commit_sha: actualRef, tree_sha: actualTree } }];"
         },
-        "id": "dc9b09c7-1bfc-4790-a192-f9606627b8c8",
+        "id": "5029986b-5c53-436f-b398-afeb6b4bca11",
         "name": "Verify Published Ref",
         "type": "n8n-nodes-base.code",
         "typeVersion": 2,
@@ -545,7 +545,7 @@
             "enableStreaming": false
           }
         },
-        "id": "715f0372-aa8b-4003-a0a3-5b43d3a800ca",
+        "id": "cb22ab1f-482f-4530-9990-c0431ffd9bf4",
         "name": "Published Response",
         "type": "n8n-nodes-base.respondToWebhook",
         "typeVersion": 1.5,

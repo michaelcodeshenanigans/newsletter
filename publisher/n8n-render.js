@@ -5,8 +5,13 @@ const manifestResponse = $input.first().json;
 function fail(message) { throw new Error(message); }
 function assert(condition, message) { if (!condition) fail(message); }
 function text(value, field, min = 1) { assert(typeof value === 'string' && value.trim().length >= min, `${field} is invalid`); }
-function date(value) { return typeof value === 'string' && /^\d{4}-\d{2}-\d{2}$/.test(value) && !Number.isNaN(Date.parse(`${value}T00:00:00Z`)); }
-function https(value) { try { return new URL(value).protocol === 'https:'; } catch { return false; } }
+function date(value) {
+  if (typeof value !== 'string' || !/^\d{4}-\d{2}-\d{2}$/.test(value)) return false;
+  const [year, month, day] = value.split('-').map(Number);
+  const parsed = new Date(Date.UTC(year, month - 1, day));
+  return parsed.getUTCFullYear() === year && parsed.getUTCMonth() === month - 1 && parsed.getUTCDate() === day;
+}
+function https(value) { return typeof value === 'string' && /^https:\/\/[^\s]+$/i.test(value); }
 function esc(value) { return String(value).replaceAll('&','&amp;').replaceAll('<','&lt;').replaceAll('>','&gt;').replaceAll('"','&quot;').replaceAll("'",'&#39;'); }
 function stable(value) {
   if (Array.isArray(value)) return `[${value.map(stable).join(',')}]`;
@@ -78,10 +83,16 @@ function sha256(ascii) {
 }
 
 const issue = envelope.issue;
+const statuses = new Set(['ga','preview','limited','open_source','announced_dated','announced_undated','unconfirmed']);
+const confidences = new Set(['high','medium','low']);
+const efforts = new Set(['low','medium','high']);
+const sourceTypes = new Set(['primary','paper','official-project','government','secondary']);
+const impactAreas = new Set(['architecture','deployment','reliability','observability','security','governance','cost','developer-workflow','data-residency','vendor-coupling']);
 assert(issue && typeof issue === 'object', 'issue must be an object');
 assert(issue.schema_version === 'newsletter.v1', 'schema_version must be newsletter.v1');
 assert(/^\d{4}-\d{2}-\d{2}$/.test(issue.issue_id || ''), 'issue_id must use YYYY-MM-DD');
 assert(Number.isInteger(issue.revision) && issue.revision >= 1, 'revision must be a positive integer');
+assert(typeof issue.generated_at === 'string' && !Number.isNaN(Date.parse(issue.generated_at)) && /T/.test(issue.generated_at), 'generated_at must be an ISO date-time');
 assert(issue.timezone === 'Asia/Jerusalem', 'timezone must be Asia/Jerusalem');
 assert(issue.coverage && date(issue.coverage.start) && date(issue.coverage.end), 'coverage dates are invalid');
 assert(issue.coverage.start <= issue.coverage.end, 'coverage start is after coverage end');
@@ -99,6 +110,7 @@ for (const [index, source] of issue.citations.entries()) {
   text(source.publisher, `citations[${index}].publisher`, 2);
   assert(https(source.url), `citations[${index}].url must be HTTPS`);
   assert(source.published_at === null || date(source.published_at), `citations[${index}].published_at is invalid`);
+  assert(sourceTypes.has(source.source_type), `citations[${index}].source_type is invalid`);
 }
 function citationIds(ids, field) {
   assert(Array.isArray(ids) && ids.length, `${field} must not be empty`);
@@ -106,17 +118,21 @@ function citationIds(ids, field) {
 }
 assert(Array.isArray(issue.developments) && issue.developments.length >= 3 && issue.developments.length <= 6, 'developments must have 3 to 6 items');
 for (const [index, item] of issue.developments.entries()) {
+  assert(/^[a-z0-9]+(?:-[a-z0-9]+)*$/.test(item.id || ''), `developments[${index}].id is invalid`);
   text(item.title, `developments[${index}].title`, 8);
+  assert(statuses.has(item.status), `developments[${index}].status is invalid`);
   assert(date(item.event_date), `developments[${index}].event_date is invalid`);
   assert(item.event_date >= issue.coverage.start && item.event_date <= issue.coverage.end, `developments[${index}].event_date is outside coverage`);
   for (const key of ['what_changed','why_it_matters','platform_impact','recommended_action','watchouts']) text(item[key], `developments[${index}].${key}`, 5);
+  assert(confidences.has(item.confidence), `developments[${index}].confidence is invalid`);
   assert(Number.isInteger(item.score) && item.score >= 0 && item.score <= 21, `developments[${index}].score is invalid`);
   citationIds(item.citation_ids, `developments[${index}].citation_ids`);
 }
 assert(Array.isArray(issue.devops_impacts) && issue.devops_impacts.length >= 2, 'at least two DevOps impacts are required');
 issue.devops_impacts.forEach((item, index) => { text(item.text, `devops_impacts[${index}].text`, 20); citationIds(item.citation_ids, `devops_impacts[${index}].citation_ids`); });
 assert(Array.isArray(issue.bring_to_work) && issue.bring_to_work.length >= 2, 'at least two bring-to-work items are required');
-issue.bring_to_work.forEach((item, index) => { text(item.title, `bring_to_work[${index}].title`, 4); text(item.next_step, `bring_to_work[${index}].next_step`, 10); citationIds(item.citation_ids, `bring_to_work[${index}].citation_ids`); });
+issue.devops_impacts.forEach((item, index) => assert(impactAreas.has(item.area), `devops_impacts[${index}].area is invalid`));
+issue.bring_to_work.forEach((item, index) => { text(item.title, `bring_to_work[${index}].title`, 4); text(item.what, `bring_to_work[${index}].what`, 10); text(item.fit, `bring_to_work[${index}].fit`, 10); text(item.next_step, `bring_to_work[${index}].next_step`, 10); assert(efforts.has(item.effort), `bring_to_work[${index}].effort is invalid`); citationIds(item.citation_ids, `bring_to_work[${index}].citation_ids`); });
 assert(Array.isArray(issue.watchouts) && issue.watchouts.length >= 1, 'at least one watchout is required');
 issue.watchouts.forEach((item, index) => { text(item.text, `watchouts[${index}].text`, 10); citationIds(item.citation_ids, `watchouts[${index}].citation_ids`); });
 

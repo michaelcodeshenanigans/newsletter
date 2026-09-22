@@ -105,4 +105,8 @@ test('validation blocks an issue whose coverage or event dates are inconsistent'
   const issue = validIssue();
   issue.developments[0].event_date = '2026-09-15';
   assert.throws(() => validateIssue(issue), /outside coverage/i);
+
+  const impossible = validIssue();
+  impossible.developments[0].event_date = '2026-02-31';
+  assert.throws(() => validateIssue(impossible), /event_date/i);
 });

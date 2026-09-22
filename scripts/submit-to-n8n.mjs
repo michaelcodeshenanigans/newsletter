@@ -2,7 +2,7 @@
 import { readFileSync } from 'node:fs';
 import { homedir } from 'node:os';
 import { resolve } from 'node:path';
-import { pathToFileURL } from 'node:url';
+import { fileURLToPath } from 'node:url';
 import { validateIssue } from '../publisher/newsletter.mjs';
 
 export function parseEnv(content) {
@@ -34,6 +34,19 @@ export function buildSubmission(issue, config, { publish = false } = {}) {
   };
 }
 
+export function isDirectExecution(metaUrl, argv1) {
+  return Boolean(argv1 && resolve(fileURLToPath(metaUrl)) === resolve(argv1));
+}
+
+export function decodePublisherResponse(body) {
+  if (!body.trim()) throw new Error('Publisher returned an empty response');
+  try {
+    return JSON.parse(body);
+  } catch {
+    throw new Error('Publisher returned invalid JSON');
+  }
+}
+
 async function main() {
   const args = process.argv.slice(2);
   const publish = args.includes('--publish');
@@ -47,14 +60,10 @@ async function main() {
   const response = await fetch(request.url, request.options);
   const body = await response.text();
   if (!response.ok) throw new Error(`Publisher returned HTTP ${response.status}: ${body}`);
-  try {
-    console.log(JSON.stringify(JSON.parse(body), null, 2));
-  } catch {
-    console.log(body);
-  }
+  console.log(JSON.stringify(decodePublisherResponse(body), null, 2));
 }
 
-if (import.meta.url === pathToFileURL(process.argv[1]).href) {
+if (isDirectExecution(import.meta.url, process.argv[1])) {
   main().catch((error) => {
     console.error(error.message);
     process.exitCode = 1;
