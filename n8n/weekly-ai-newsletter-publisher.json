@@ -1,0 +1,770 @@
+[
+  {
+    "id": "wklyAiPubV100001",
+    "name": "Weekly AI Newsletter Publisher",
+    "active": false,
+    "nodes": [
+      {
+        "parameters": {
+          "httpMethod": "POST",
+          "path": "weekly-ai-newsletter-v1",
+          "authentication": "headerAuth",
+          "responseMode": "responseNode",
+          "options": {}
+        },
+        "id": "ca37d7f9-5a89-45a4-9559-083ebcf55c35",
+        "name": "Newsletter Webhook",
+        "type": "n8n-nodes-base.webhook",
+        "typeVersion": 2.1,
+        "position": [
+          -1080,
+          0
+        ],
+        "webhookId": "1f82fbb9-d457-49c9-8ae8-e2f9bff2e161",
+        "credentials": {
+          "httpHeaderAuth": {
+            "id": "dJG5vfeZ3irB21VE",
+            "name": "Newsletter Webhook Header"
+          }
+        }
+      },
+      {
+        "parameters": {
+          "mode": "runOnceForAllItems",
+          "jsCode": "\nconst incoming = $input.first().json;\nconst body = incoming.body ?? incoming;\nif (!body || typeof body !== 'object' || !body.issue) throw new Error('Request body must contain issue');\nconst mode = body.mode ?? 'dry_run';\nif (!['dry_run', 'publish'].includes(mode)) throw new Error('mode must be dry_run or publish');\nreturn [{ json: { mode, issue: body.issue } }];"
+        },
+        "id": "99399afd-61ee-4932-ba0a-925bf8f9fa1e",
+        "name": "Validate Request",
+        "type": "n8n-nodes-base.code",
+        "typeVersion": 2,
+        "position": [
+          -860,
+          0
+        ]
+      },
+      {
+        "parameters": {
+          "method": "GET",
+          "url": "https://api.github.com/repos/michaelcodeshenanigans/newsletter/git/ref/heads/main",
+          "authentication": "predefinedCredentialType",
+          "nodeCredentialType": "githubApi",
+          "sendHeaders": true,
+          "headerParameters": {
+            "parameters": [
+              {
+                "name": "Accept",
+                "value": "application/vnd.github+json"
+              },
+              {
+                "name": "X-GitHub-Api-Version",
+                "value": "2022-11-28"
+              }
+            ]
+          },
+          "options": {}
+        },
+        "id": "c4ea57bd-5f14-4169-a9da-32c5a1c2c522",
+        "name": "Get Main Ref",
+        "type": "n8n-nodes-base.httpRequest",
+        "typeVersion": 4.5,
+        "position": [
+          -640,
+          0
+        ],
+        "credentials": {
+          "githubApi": {
+            "id": "Fkh__PG4krQdyfZN",
+            "name": "Newsletter GitHub API"
+          }
+        }
+      },
+      {
+        "parameters": {
+          "method": "GET",
+          "url": "=https://api.github.com/repos/michaelcodeshenanigans/newsletter/git/commits/{{ $json.object.sha }}",
+          "authentication": "predefinedCredentialType",
+          "nodeCredentialType": "githubApi",
+          "sendHeaders": true,
+          "headerParameters": {
+            "parameters": [
+              {
+                "name": "Accept",
+                "value": "application/vnd.github+json"
+              },
+              {
+                "name": "X-GitHub-Api-Version",
+                "value": "2022-11-28"
+              }
+            ]
+          },
+          "options": {}
+        },
+        "id": "5d44bd46-0f18-425f-966b-bb9d23c324c0",
+        "name": "Get Main Commit",
+        "type": "n8n-nodes-base.httpRequest",
+        "typeVersion": 4.5,
+        "position": [
+          -420,
+          0
+        ],
+        "credentials": {
+          "githubApi": {
+            "id": "Fkh__PG4krQdyfZN",
+            "name": "Newsletter GitHub API"
+          }
+        }
+      },
+      {
+        "parameters": {
+          "method": "GET",
+          "url": "=https://api.github.com/repos/michaelcodeshenanigans/newsletter/contents/issues/manifest.json?ref={{ $('Get Main Ref').first().json.object.sha }}",
+          "authentication": "predefinedCredentialType",
+          "nodeCredentialType": "githubApi",
+          "sendHeaders": true,
+          "headerParameters": {
+            "parameters": [
+              {
+                "name": "Accept",
+                "value": "application/vnd.github+json"
+              },
+              {
+                "name": "X-GitHub-Api-Version",
+                "value": "2022-11-28"
+              }
+            ]
+          },
+          "options": {}
+        },
+        "id": "41c84f73-1338-49d4-8f0d-71019a1a6d77",
+        "name": "Get Manifest",
+        "type": "n8n-nodes-base.httpRequest",
+        "typeVersion": 4.5,
+        "position": [
+          -200,
+          0
+        ],
+        "credentials": {
+          "githubApi": {
+            "id": "Fkh__PG4krQdyfZN",
+            "name": "Newsletter GitHub API"
+          }
+        }
+      },
+      {
+        "parameters": {
+          "mode": "runOnceForAllItems",
+          "jsCode": "return await (async function render($input, $) {\nconst envelope = $('Validate Request').first().json;\nconst manifestResponse = $input.first().json;\n\nfunction fail(message) { throw new Error(message); }\nfunction assert(condition, message) { if (!condition) fail(message); }\nfunction text(value, field, min = 1) { assert(typeof value === 'string' && value.trim().length >= min, `${field} is invalid`); }\nfunction date(value) { return typeof value === 'string' && /^\\d{4}-\\d{2}-\\d{2}$/.test(value) && !Number.isNaN(Date.parse(`${value}T00:00:00Z`)); }\nfunction https(value) { try { return new URL(value).protocol === 'https:'; } catch { return false; } }\nfunction esc(value) { return String(value).replaceAll('&','&amp;').replaceAll('<','&lt;').replaceAll('>','&gt;').replaceAll('\"','&quot;').replaceAll(\"'\",'&#39;'); }\nfunction stable(value) {\n  if (Array.isArray(value)) return `[${value.map(stable).join(',')}]`;\n  if (value && typeof value === 'object') return `{${Object.keys(value).sort().map((key) => `${JSON.stringify(key)}:${stable(value[key])}`).join(',')}}`;\n  return JSON.stringify(value);\n}\n\n// Compact synchronous SHA-256 implementation for deterministic idempotency.\nfunction sha256(ascii) {\n  function rightRotate(value, amount) { return (value >>> amount) | (value << (32 - amount)); }\n  const mathPow = Math.pow;\n  const maxWord = mathPow(2, 32);\n  const lengthProperty = 'length';\n  let i, j;\n  let result = '';\n  const words = [];\n  const asciiBitLength = ascii[lengthProperty] * 8;\n  let hash = sha256.h = sha256.h || [];\n  const k = sha256.k = sha256.k || [];\n  let primeCounter = k[lengthProperty];\n  const isComposite = {};\n  for (let candidate = 2; primeCounter < 64; candidate++) {\n    if (!isComposite[candidate]) {\n      for (i = 0; i < 313; i += candidate) isComposite[i] = candidate;\n      hash[primeCounter] = (mathPow(candidate, 0.5) * maxWord) | 0;\n      k[primeCounter++] = (mathPow(candidate, 1 / 3) * maxWord) | 0;\n    }\n  }\n  ascii += '\\x80';\n  while (ascii[lengthProperty] % 64 - 56) ascii += '\\x00';\n  for (i = 0; i < ascii[lengthProperty]; i++) {\n    j = ascii.charCodeAt(i);\n    assert(j >> 8 === 0, 'Issue JSON must use UTF-8 characters supported by the renderer');\n    words[i >> 2] |= j << ((3 - i) % 4) * 8;\n  }\n  words[words[lengthProperty]] = ((asciiBitLength / maxWord) | 0);\n  words[words[lengthProperty]] = (asciiBitLength);\n  for (j = 0; j < words[lengthProperty];) {\n    const w = words.slice(j, j += 16);\n    const oldHash = hash.slice(0);\n    hash = hash.slice(0, 8);\n    for (i = 0; i < 64; i++) {\n      const i2 = i + j;\n      const w15 = w[i - 15], w2 = w[i - 2];\n      const a = hash[0], e = hash[4];\n      const temp1 = hash[7]\n        + (rightRotate(e, 6) ^ rightRotate(e, 11) ^ rightRotate(e, 25))\n        + ((e & hash[5]) ^ ((~e) & hash[6]))\n        + k[i]\n        + (w[i] = i < 16 ? w[i] : (w[i - 16]\n          + (rightRotate(w15, 7) ^ rightRotate(w15, 18) ^ (w15 >>> 3))\n          + w[i - 7]\n          + (rightRotate(w2, 17) ^ rightRotate(w2, 19) ^ (w2 >>> 10))) | 0);\n      const temp2 = (rightRotate(a, 2) ^ rightRotate(a, 13) ^ rightRotate(a, 22))\n        + ((a & hash[1]) ^ (a & hash[2]) ^ (hash[1] & hash[2]));\n      hash = [(temp1 + temp2) | 0].concat(hash);\n      hash[4] = (hash[4] + temp1) | 0;\n      hash.pop();\n    }\n    for (i = 0; i < 8; i++) hash[i] = (hash[i] + oldHash[i]) | 0;\n  }\n  for (i = 0; i < 8; i++) {\n    for (j = 3; j + 1; j--) {\n      const b = (hash[i] >> (j * 8)) & 255;\n      result += (b < 16 ? '0' : '') + b.toString(16);\n    }\n  }\n  return result;\n}\n\nconst issue = envelope.issue;\nassert(issue && typeof issue === 'object', 'issue must be an object');\nassert(issue.schema_version === 'newsletter.v1', 'schema_version must be newsletter.v1');\nassert(/^\\d{4}-\\d{2}-\\d{2}$/.test(issue.issue_id || ''), 'issue_id must use YYYY-MM-DD');\nassert(Number.isInteger(issue.revision) && issue.revision >= 1, 'revision must be a positive integer');\nassert(issue.timezone === 'Asia/Jerusalem', 'timezone must be Asia/Jerusalem');\nassert(issue.coverage && date(issue.coverage.start) && date(issue.coverage.end), 'coverage dates are invalid');\nassert(issue.coverage.start <= issue.coverage.end, 'coverage start is after coverage end');\nassert(issue.issue_id === issue.coverage.end, 'issue_id must equal coverage end');\ntext(issue.title, 'title', 10);\ntext(issue.summary, 'summary', 40);\ntext(issue.telegram_text, 'telegram_text', 200);\nassert(Array.isArray(issue.citations) && issue.citations.length >= 3, 'at least three citations are required');\nconst cited = new Set();\nfor (const [index, source] of issue.citations.entries()) {\n  assert(/^src-\\d{2,3}$/.test(source.id || ''), `citations[${index}].id is invalid`);\n  assert(!cited.has(source.id), `duplicate citation ${source.id}`);\n  cited.add(source.id);\n  text(source.title, `citations[${index}].title`, 3);\n  text(source.publisher, `citations[${index}].publisher`, 2);\n  assert(https(source.url), `citations[${index}].url must be HTTPS`);\n  assert(source.published_at === null || date(source.published_at), `citations[${index}].published_at is invalid`);\n}\nfunction citationIds(ids, field) {\n  assert(Array.isArray(ids) && ids.length, `${field} must not be empty`);\n  for (const id of ids) assert(cited.has(id), `${field} references undeclared citation ${id}`);\n}\nassert(Array.isArray(issue.developments) && issue.developments.length >= 3 && issue.developments.length <= 6, 'developments must have 3 to 6 items');\nfor (const [index, item] of issue.developments.entries()) {\n  text(item.title, `developments[${index}].title`, 8);\n  assert(date(item.event_date), `developments[${index}].event_date is invalid`);\n  assert(item.event_date >= issue.coverage.start && item.event_date <= issue.coverage.end, `developments[${index}].event_date is outside coverage`);\n  for (const key of ['what_changed','why_it_matters','platform_impact','recommended_action','watchouts']) text(item[key], `developments[${index}].${key}`, 5);\n  assert(Number.isInteger(item.score) && item.score >= 0 && item.score <= 21, `developments[${index}].score is invalid`);\n  citationIds(item.citation_ids, `developments[${index}].citation_ids`);\n}\nassert(Array.isArray(issue.devops_impacts) && issue.devops_impacts.length >= 2, 'at least two DevOps impacts are required');\nissue.devops_impacts.forEach((item, index) => { text(item.text, `devops_impacts[${index}].text`, 20); citationIds(item.citation_ids, `devops_impacts[${index}].citation_ids`); });\nassert(Array.isArray(issue.bring_to_work) && issue.bring_to_work.length >= 2, 'at least two bring-to-work items are required');\nissue.bring_to_work.forEach((item, index) => { text(item.title, `bring_to_work[${index}].title`, 4); text(item.next_step, `bring_to_work[${index}].next_step`, 10); citationIds(item.citation_ids, `bring_to_work[${index}].citation_ids`); });\nassert(Array.isArray(issue.watchouts) && issue.watchouts.length >= 1, 'at least one watchout is required');\nissue.watchouts.forEach((item, index) => { text(item.text, `watchouts[${index}].text`, 10); citationIds(item.citation_ids, `watchouts[${index}].citation_ids`); });\n\nlet manifest = { version: 1, issues: [] };\nif (manifestResponse && typeof manifestResponse.content === 'string') {\n  manifest = JSON.parse(Buffer.from(manifestResponse.content.replace(/\\n/g, ''), 'base64').toString('utf8'));\n}\nif (!Array.isArray(manifest.issues)) manifest = { version: 1, issues: [] };\n\nconst byId = new Map(issue.citations.map((source) => [source.id, source]));\nconst links = (ids) => ids.map((id) => `[${id}](${byId.get(id).url})`).join(' ');\nconst markdown = ['---', `title: \"${issue.title.replaceAll('\"','\\\\\"')}\"`, `date: ${issue.generated_at}`, `issue_id: ${issue.issue_id}`, `revision: ${issue.revision}`, '---', '', `# ${issue.title}`, '', `_${issue.coverage.start} through ${issue.coverage.end} · Revision ${issue.revision}_`, '', issue.summary, '', '## What changed', ''];\nfor (const item of issue.developments) {\n  markdown.push(`### ${item.title}`, '', `**Status:** ${item.status.replaceAll('_',' ')} · **Event date:** ${item.event_date} · **Confidence:** ${item.confidence} · **Score:** ${item.score}/21`, '', `**What changed:** ${item.what_changed}`, '', `**Why it matters:** ${item.why_it_matters}`, '', `**Platform impact:** ${item.platform_impact}`, '', `**Recommended action:** ${item.recommended_action}`, '', `**Watchouts:** ${item.watchouts}`, '', `Sources: ${links(item.citation_ids)}`, '');\n}\nmarkdown.push('## DevOps / platform impact', '');\nfor (const item of issue.devops_impacts) markdown.push(`- **${item.area}:** ${item.text} ${links(item.citation_ids)}`);\nmarkdown.push('', '## Bring to work', '');\nfor (const item of issue.bring_to_work) markdown.push(`### ${item.title}`, '', item.what, '', `- **Fit:** ${item.fit}`, `- **Effort:** ${item.effort}`, `- **Next step:** ${item.next_step}`, `- **Sources:** ${links(item.citation_ids)}`, '');\nmarkdown.push('## Watchouts', '');\nfor (const item of issue.watchouts) markdown.push(`- ${item.text} ${links(item.citation_ids)}`);\nmarkdown.push('', '## Sources', '');\nfor (const source of issue.citations) markdown.push(`- **${source.id}:** [${source.title}](${source.url}), ${source.publisher}${source.published_at ? ` — ${source.published_at}` : ''} (${source.source_type})`);\nmarkdown.push('');\n\nconst contentHash = sha256(unescape(encodeURIComponent(stable(issue))));\nconst old = manifest.issues.find((entry) => entry.issue_id === issue.issue_id);\nif (!old && issue.revision !== 1) fail(`initial revision must be 1 for issue ${issue.issue_id}`);\nif (old && !(old.revision === issue.revision && old.content_hash === contentHash) && issue.revision !== old.revision + 1) {\n  fail(`next revision for issue ${issue.issue_id} must be ${old.revision + 1}`);\n}\nconst entry = { issue_id: issue.issue_id, revision: issue.revision, title: issue.title, coverage: issue.coverage, published_at: issue.generated_at, path: `issues/${issue.issue_id}.md`, content_hash: contentHash };\nconst noop = Boolean(old && old.revision === issue.revision && old.content_hash === contentHash);\nmanifest.version = 1;\nmanifest.issues = manifest.issues.filter((item) => item.issue_id !== issue.issue_id).concat(entry).sort((a,b) => b.issue_id.localeCompare(a.issue_id));\nconst site = 'https://michaelcodeshenanigans.github.io/newsletter';\nconst indexItems = manifest.issues.map((item) => `<article><h2><a href=\"${site}/issues/${esc(item.issue_id)}.html\">${esc(item.title)}</a></h2><p>${esc(item.coverage.start)} through ${esc(item.coverage.end)} · Revision ${item.revision}</p></article>`).join('');\nconst indexHtml = `<!doctype html><html lang=\"en\"><head><meta charset=\"utf-8\"><meta name=\"viewport\" content=\"width=device-width,initial-scale=1\"><title>Weekly AI &amp; Agentic Systems Newsletter</title><link rel=\"alternate\" type=\"application/rss+xml\" title=\"Newsletter RSS\" href=\"${site}/feed.xml\"><style>body{max-width:52rem;margin:3rem auto;padding:0 1rem;font:18px/1.6 system-ui,sans-serif;color:#18202a}a{color:#0757a6}article{border-top:1px solid #d8dee8;padding:1rem 0}small{color:#566}</style></head><body><header><h1>Weekly AI &amp; Agentic Systems Newsletter</h1><p>Source-grounded changes, operational implications, and practical evaluation candidates.</p></header><main>${indexItems || '<p>No issues have been published yet.</p>'}</main><footer><small><a href=\"feed.xml\">RSS feed</a> · <a href=\"https://github.com/michaelcodeshenanigans/newsletter\">Source repository</a></small></footer></body></html>\\n`;\nconst rssItems = manifest.issues.slice(0,20).map((item) => `<item><title>${esc(item.title)}</title><link>${site}/issues/${item.issue_id}.html</link><guid isPermaLink=\"true\">${site}/issues/${item.issue_id}.html</guid><pubDate>${new Date(item.published_at).toUTCString()}</pubDate><description>${esc(`Coverage ${item.coverage.start} through ${item.coverage.end}.`)}</description></item>`).join('');\nconst rss = `<?xml version=\"1.0\" encoding=\"UTF-8\"?><rss version=\"2.0\"><channel><title>Weekly AI &amp; Agentic Systems Newsletter</title><link>${site}/</link><description>Source-grounded AI and agentic systems intelligence.</description><language>en-us</language>${rssItems}</channel></rss>\\n`;\nconst files = [\n  { path: entry.path, content: `${markdown.join('\\n')}\\n` },\n  { path: `artifacts/${issue.issue_id}.v${issue.revision}.json`, content: `${JSON.stringify(issue,null,2)}\\n` },\n  { path: 'issues/manifest.json', content: `${JSON.stringify(manifest,null,2)}\\n` },\n  { path: 'index.html', content: indexHtml },\n  { path: 'feed.xml', content: rss },\n];\nreturn [{ json: { mode: envelope.mode, issue_id: issue.issue_id, revision: issue.revision, content_hash: contentHash, noop, files, commit_message: `publish: newsletter ${issue.issue_id} v${issue.revision}` } }];\n})($input, $);"
+        },
+        "id": "374e5081-5f50-4d5c-9d85-97880960b993",
+        "name": "Validate and Render",
+        "type": "n8n-nodes-base.code",
+        "typeVersion": 2,
+        "position": [
+          20,
+          0
+        ]
+      },
+      {
+        "parameters": {
+          "conditions": {
+            "options": {
+              "caseSensitive": true,
+              "leftValue": "",
+              "typeValidation": "strict",
+              "version": 2
+            },
+            "conditions": [
+              {
+                "id": "83166293-21e2-4523-a59b-8c7cd20ebdd2",
+                "leftValue": "={{ $json.mode }}",
+                "rightValue": "dry_run",
+                "operator": {
+                  "type": "string",
+                  "operation": "equals"
+                }
+              }
+            ],
+            "combinator": "and"
+          },
+          "options": {}
+        },
+        "id": "5f794bee-aea7-4a9c-9fef-db505ec5ae7a",
+        "name": "Dry Run?",
+        "type": "n8n-nodes-base.if",
+        "typeVersion": 2.3,
+        "position": [
+          240,
+          0
+        ]
+      },
+      {
+        "parameters": {
+          "respondWith": "json",
+          "responseBody": "={{ { ok: true, status: 'dry_run', dry_run: true, issue_id: $json.issue_id, revision: $json.revision, content_hash: $json.content_hash, base_commit_sha: $('Get Main Ref').first().json.object.sha, would_publish: !$json.noop, noop: $json.noop, files: $json.files.map((file) => ({ path: file.path, bytes: file.content.length })) } }}",
+          "options": {
+            "responseCode": 200,
+            "enableStreaming": false
+          }
+        },
+        "id": "82ade0dc-9fdc-4a83-be2e-8e347c787213",
+        "name": "Dry Run Response",
+        "type": "n8n-nodes-base.respondToWebhook",
+        "typeVersion": 1.5,
+        "position": [
+          480,
+          -140
+        ]
+      },
+      {
+        "parameters": {
+          "conditions": {
+            "options": {
+              "caseSensitive": true,
+              "leftValue": "",
+              "typeValidation": "strict",
+              "version": 2
+            },
+            "conditions": [
+              {
+                "id": "4ae2764b-0b6a-47a8-b96a-76f121e81802",
+                "leftValue": "={{ $json.noop }}",
+                "rightValue": true,
+                "operator": {
+                  "type": "boolean",
+                  "operation": "equals"
+                }
+              }
+            ],
+            "combinator": "and"
+          },
+          "options": {}
+        },
+        "id": "6f401f55-b017-41c5-b227-5c5dc543d5b2",
+        "name": "Already Published?",
+        "type": "n8n-nodes-base.if",
+        "typeVersion": 2.3,
+        "position": [
+          480,
+          120
+        ]
+      },
+      {
+        "parameters": {
+          "respondWith": "json",
+          "responseBody": "={{ { ok: true, status: \"idempotent_noop\", dry_run: false, noop: true, issue_id: $json.issue_id, revision: $json.revision, content_hash: $json.content_hash } }}",
+          "options": {
+            "responseCode": 200,
+            "enableStreaming": false
+          }
+        },
+        "id": "683c8cea-9045-4dd7-a5e9-3a6f77e190e4",
+        "name": "Already Published Response",
+        "type": "n8n-nodes-base.respondToWebhook",
+        "typeVersion": 1.5,
+        "position": [
+          720,
+          20
+        ]
+      },
+      {
+        "parameters": {
+          "mode": "runOnceForAllItems",
+          "jsCode": "\nconst files = $('Validate and Render').first().json.files;\nreturn files.map((file) => ({ json: file }));"
+        },
+        "id": "33c87450-69a4-4539-a00b-28a36c2aeb5e",
+        "name": "Expand Files",
+        "type": "n8n-nodes-base.code",
+        "typeVersion": 2,
+        "position": [
+          720,
+          220
+        ]
+      },
+      {
+        "parameters": {
+          "method": "POST",
+          "url": "https://api.github.com/repos/michaelcodeshenanigans/newsletter/git/blobs",
+          "authentication": "predefinedCredentialType",
+          "nodeCredentialType": "githubApi",
+          "sendHeaders": true,
+          "headerParameters": {
+            "parameters": [
+              {
+                "name": "Accept",
+                "value": "application/vnd.github+json"
+              },
+              {
+                "name": "X-GitHub-Api-Version",
+                "value": "2022-11-28"
+              }
+            ]
+          },
+          "options": {},
+          "sendBody": true,
+          "specifyBody": "json",
+          "jsonBody": "={{ { content: $json.content, encoding: 'utf-8' } }}"
+        },
+        "id": "395325a5-9739-4973-9807-d50ba9aba82f",
+        "name": "Create Git Blobs",
+        "type": "n8n-nodes-base.httpRequest",
+        "typeVersion": 4.5,
+        "position": [
+          940,
+          220
+        ],
+        "credentials": {
+          "githubApi": {
+            "id": "Fkh__PG4krQdyfZN",
+            "name": "Newsletter GitHub API"
+          }
+        }
+      },
+      {
+        "parameters": {
+          "mode": "runOnceForAllItems",
+          "jsCode": "\nconst blobs = $input.all();\nconst files = $('Expand Files').all();\nif (blobs.length !== files.length) throw new Error('Blob response count does not match publication file count');\nreturn [{ json: { tree: blobs.map((blob, index) => ({ path: files[index].json.path, mode: '100644', type: 'blob', sha: blob.json.sha })) } }];"
+        },
+        "id": "d1c93aa2-2cb9-4dcf-8c3a-28111216db52",
+        "name": "Assemble Git Tree",
+        "type": "n8n-nodes-base.code",
+        "typeVersion": 2,
+        "position": [
+          1160,
+          220
+        ]
+      },
+      {
+        "parameters": {
+          "method": "POST",
+          "url": "https://api.github.com/repos/michaelcodeshenanigans/newsletter/git/trees",
+          "authentication": "predefinedCredentialType",
+          "nodeCredentialType": "githubApi",
+          "sendHeaders": true,
+          "headerParameters": {
+            "parameters": [
+              {
+                "name": "Accept",
+                "value": "application/vnd.github+json"
+              },
+              {
+                "name": "X-GitHub-Api-Version",
+                "value": "2022-11-28"
+              }
+            ]
+          },
+          "options": {},
+          "sendBody": true,
+          "specifyBody": "json",
+          "jsonBody": "={{ { base_tree: $('Get Main Commit').first().json.tree.sha, tree: $json.tree } }}"
+        },
+        "id": "911fb831-910d-4b2d-b599-67c6ee643818",
+        "name": "Create Git Tree",
+        "type": "n8n-nodes-base.httpRequest",
+        "typeVersion": 4.5,
+        "position": [
+          1380,
+          220
+        ],
+        "credentials": {
+          "githubApi": {
+            "id": "Fkh__PG4krQdyfZN",
+            "name": "Newsletter GitHub API"
+          }
+        }
+      },
+      {
+        "parameters": {
+          "method": "POST",
+          "url": "https://api.github.com/repos/michaelcodeshenanigans/newsletter/git/commits",
+          "authentication": "predefinedCredentialType",
+          "nodeCredentialType": "githubApi",
+          "sendHeaders": true,
+          "headerParameters": {
+            "parameters": [
+              {
+                "name": "Accept",
+                "value": "application/vnd.github+json"
+              },
+              {
+                "name": "X-GitHub-Api-Version",
+                "value": "2022-11-28"
+              }
+            ]
+          },
+          "options": {},
+          "sendBody": true,
+          "specifyBody": "json",
+          "jsonBody": "={{ { message: $('Validate and Render').first().json.commit_message, tree: $json.sha, parents: [ $('Get Main Ref').first().json.object.sha ] } }}"
+        },
+        "id": "819fc3ba-2f77-47c9-a402-5af883448e6f",
+        "name": "Create Git Commit",
+        "type": "n8n-nodes-base.httpRequest",
+        "typeVersion": 4.5,
+        "position": [
+          1600,
+          220
+        ],
+        "credentials": {
+          "githubApi": {
+            "id": "Fkh__PG4krQdyfZN",
+            "name": "Newsletter GitHub API"
+          }
+        }
+      },
+      {
+        "parameters": {
+          "method": "PATCH",
+          "url": "https://api.github.com/repos/michaelcodeshenanigans/newsletter/git/refs/heads/main",
+          "authentication": "predefinedCredentialType",
+          "nodeCredentialType": "githubApi",
+          "sendHeaders": true,
+          "headerParameters": {
+            "parameters": [
+              {
+                "name": "Accept",
+                "value": "application/vnd.github+json"
+              },
+              {
+                "name": "X-GitHub-Api-Version",
+                "value": "2022-11-28"
+              }
+            ]
+          },
+          "options": {},
+          "sendBody": true,
+          "specifyBody": "json",
+          "jsonBody": "={{ { sha: $json.sha, force: false } }}"
+        },
+        "id": "2011f145-4fc0-4651-a6f1-f119484c7e9b",
+        "name": "Update Main Ref",
+        "type": "n8n-nodes-base.httpRequest",
+        "typeVersion": 4.5,
+        "position": [
+          1820,
+          220
+        ],
+        "credentials": {
+          "githubApi": {
+            "id": "Fkh__PG4krQdyfZN",
+            "name": "Newsletter GitHub API"
+          }
+        }
+      },
+      {
+        "parameters": {
+          "method": "GET",
+          "url": "https://api.github.com/repos/michaelcodeshenanigans/newsletter/git/ref/heads/main",
+          "authentication": "predefinedCredentialType",
+          "nodeCredentialType": "githubApi",
+          "sendHeaders": true,
+          "headerParameters": {
+            "parameters": [
+              {
+                "name": "Accept",
+                "value": "application/vnd.github+json"
+              },
+              {
+                "name": "X-GitHub-Api-Version",
+                "value": "2022-11-28"
+              }
+            ]
+          },
+          "options": {}
+        },
+        "id": "bbf15f29-c356-437f-838f-414982d0683c",
+        "name": "Get Updated Ref",
+        "type": "n8n-nodes-base.httpRequest",
+        "typeVersion": 4.5,
+        "position": [
+          2040,
+          220
+        ],
+        "credentials": {
+          "githubApi": {
+            "id": "Fkh__PG4krQdyfZN",
+            "name": "Newsletter GitHub API"
+          }
+        }
+      },
+      {
+        "parameters": {
+          "method": "GET",
+          "url": "=https://api.github.com/repos/michaelcodeshenanigans/newsletter/git/commits/{{ $json.object.sha }}",
+          "authentication": "predefinedCredentialType",
+          "nodeCredentialType": "githubApi",
+          "sendHeaders": true,
+          "headerParameters": {
+            "parameters": [
+              {
+                "name": "Accept",
+                "value": "application/vnd.github+json"
+              },
+              {
+                "name": "X-GitHub-Api-Version",
+                "value": "2022-11-28"
+              }
+            ]
+          },
+          "options": {}
+        },
+        "id": "21bca5a9-7b7a-4208-b278-7ea2e13cb331",
+        "name": "Get Published Commit",
+        "type": "n8n-nodes-base.httpRequest",
+        "typeVersion": 4.5,
+        "position": [
+          2260,
+          220
+        ],
+        "credentials": {
+          "githubApi": {
+            "id": "Fkh__PG4krQdyfZN",
+            "name": "Newsletter GitHub API"
+          }
+        }
+      },
+      {
+        "parameters": {
+          "mode": "runOnceForAllItems",
+          "jsCode": "\nconst expectedCommit = $('Create Git Commit').first().json.sha;\nconst expectedTree = $('Create Git Tree').first().json.sha;\nconst actualRef = $('Get Updated Ref').first().json.object.sha;\nconst actualTree = $input.first().json.tree.sha;\nif (actualRef !== expectedCommit) throw new Error('Published ref verification failed');\nif (actualTree !== expectedTree) throw new Error('Published tree verification failed');\nreturn [{ json: { commit_sha: actualRef, tree_sha: actualTree } }];"
+        },
+        "id": "dc9b09c7-1bfc-4790-a192-f9606627b8c8",
+        "name": "Verify Published Ref",
+        "type": "n8n-nodes-base.code",
+        "typeVersion": 2,
+        "position": [
+          2480,
+          220
+        ]
+      },
+      {
+        "parameters": {
+          "respondWith": "json",
+          "responseBody": "={{ { ok: true, status: 'published', dry_run: false, noop: false, issue_id: $('Validate and Render').first().json.issue_id, revision: $('Validate and Render').first().json.revision, content_hash: $('Validate and Render').first().json.content_hash, commit_sha: $json.commit_sha } }}",
+          "options": {
+            "responseCode": 200,
+            "enableStreaming": false
+          }
+        },
+        "id": "715f0372-aa8b-4003-a0a3-5b43d3a800ca",
+        "name": "Published Response",
+        "type": "n8n-nodes-base.respondToWebhook",
+        "typeVersion": 1.5,
+        "position": [
+          2700,
+          220
+        ]
+      }
+    ],
+    "connections": {
+      "Newsletter Webhook": {
+        "main": [
+          [
+            {
+              "node": "Validate Request",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Validate Request": {
+        "main": [
+          [
+            {
+              "node": "Get Main Ref",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Get Main Ref": {
+        "main": [
+          [
+            {
+              "node": "Get Main Commit",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Get Main Commit": {
+        "main": [
+          [
+            {
+              "node": "Get Manifest",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Get Manifest": {
+        "main": [
+          [
+            {
+              "node": "Validate and Render",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Validate and Render": {
+        "main": [
+          [
+            {
+              "node": "Dry Run?",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Dry Run?": {
+        "main": [
+          [
+            {
+              "node": "Dry Run Response",
+              "type": "main",
+              "index": 0
+            }
+          ],
+          [
+            {
+              "node": "Already Published?",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Already Published?": {
+        "main": [
+          [
+            {
+              "node": "Already Published Response",
+              "type": "main",
+              "index": 0
+            }
+          ],
+          [
+            {
+              "node": "Expand Files",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Expand Files": {
+        "main": [
+          [
+            {
+              "node": "Create Git Blobs",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Create Git Blobs": {
+        "main": [
+          [
+            {
+              "node": "Assemble Git Tree",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Assemble Git Tree": {
+        "main": [
+          [
+            {
+              "node": "Create Git Tree",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Create Git Tree": {
+        "main": [
+          [
+            {
+              "node": "Create Git Commit",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Create Git Commit": {
+        "main": [
+          [
+            {
+              "node": "Update Main Ref",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Update Main Ref": {
+        "main": [
+          [
+            {
+              "node": "Get Updated Ref",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Get Updated Ref": {
+        "main": [
+          [
+            {
+              "node": "Get Published Commit",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Get Published Commit": {
+        "main": [
+          [
+            {
+              "node": "Verify Published Ref",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Verify Published Ref": {
+        "main": [
+          [
+            {
+              "node": "Published Response",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      }
+    },
+    "settings": {
+      "executionOrder": "v1",
+      "callerPolicy": "workflowsFromSameOwner",
+      "availableInMCP": false
+    },
+    "staticData": null,
+    "pinData": {},
+    "tags": []
+  }
+]

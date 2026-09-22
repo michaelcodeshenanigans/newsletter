@@ -1,0 +1,12 @@
+{
+  "name": "weekly-ai-newsletter-publisher",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "test": "node --test",
+    "build:workflow": "node publisher/build-workflow.mjs"
+  },
+  "engines": {
+    "node": ">=20"
+  }
+}

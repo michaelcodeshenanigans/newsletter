@@ -9,7 +9,7 @@ A weekly, source-grounded briefing for AI innovation and engineering leads worki
 - Cadence: Saturdays at 12:00, Asia/Jerusalem
 - Editorial scheduler: existing Hermes cron job `weekly-ai-devops-digest`
 - Telegram delivery: retained
-- Web publisher: planned event-driven n8n webhook
+- Web publisher: authenticated event-driven n8n webhook
 
 There is one weekly schedule: Hermes. n8n will validate, render, and publish the completed artifact; it will not independently research or schedule another digest.
 
@@ -31,7 +31,7 @@ Each issue answers:
 
 Primary sources are required for material claims. Other newsletters and secondary reporting may guide discovery or provide attributed commentary, but they are not copied or treated as release authority.
 
-## Planned publication flow
+## Publication flow
 
 ```text
 Hermes weekly cron
@@ -44,3 +44,27 @@ Hermes weekly cron
 ```
 
 No scheduled GitHub Actions workflow is needed.
+
+## Implementation
+
+- `config/cron-prompt.md` — durable prompt for the existing Hermes job.
+- `publisher/newsletter.mjs` — validation and deterministic static-file renderer.
+- `publisher/n8n-render.js` — renderer embedded into the n8n Code node.
+- `publisher/build-workflow.mjs` — generates the importable n8n workflow.
+- `n8n/weekly-ai-newsletter-publisher.json` — versioned workflow export.
+- `scripts/submit-to-n8n.mjs` — authenticated submission client; defaults to dry-run.
+- `test/` — Node test suite covering validation, idempotency, rendering, and workflow structure.
+
+Run the checks with:
+
+```bash
+npm test
+```
+
+Preview an issue without writing to GitHub:
+
+```bash
+node scripts/submit-to-n8n.mjs /path/to/issue.json
+```
+
+`--publish` is intentionally explicit and must only be used after editorial approval.
