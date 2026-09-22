@@ -1,4 +1,17 @@
 {
   "version": 1,
-  "issues": []
+  "issues": [
+    {
+      "issue_id": "2026-09-22",
+      "revision": 1,
+      "title": "Weekly AI & Agentic Systems Digest — September 16–22, 2026",
+      "coverage": {
+        "start": "2026-09-16",
+        "end": "2026-09-22"
+      },
+      "published_at": "2026-09-22T20:33:54+03:00",
+      "path": "issues/2026-09-22.md",
+      "content_hash": "bd1ebf0c352612b69179e1f2a618990b47c2eaabd68ffcfbf9d363015899bad0"
+    }
+  ]
 }
