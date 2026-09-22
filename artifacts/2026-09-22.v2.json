@@ -1,0 +1,310 @@
+{
+  "schema_version": "newsletter.v1",
+  "issue_id": "2026-09-22",
+  "revision": 2,
+  "generated_at": "2026-09-22T21:15:41+03:00",
+  "timezone": "Asia/Jerusalem",
+  "coverage": {
+    "start": "2026-09-16",
+    "end": "2026-09-22"
+  },
+  "title": "Weekly AI & Agentic Systems Digest — September 16–22, 2026",
+  "summary": "The corrected edition leads with AWS’s next-generation AgentCore Runtime, alongside behavior-level agent security, hardened execution isolation, measurable customization adoption, governed interface generation, and verified access for sensitive domains.",
+  "developments": [
+    {
+      "id": "agentcore-runtime-v2",
+      "title": "AWS launches the next-generation AgentCore Runtime",
+      "status": "ga",
+      "event_date": "2026-09-18",
+      "availability": "Generally available as platformVersion V2 in us-east-1, us-east-2, us-west-2, eu-west-1, and ap-northeast-1 for new or updated AgentCore runtimes.",
+      "what_changed": "AWS released a new AgentCore Runtime with elastic memory allocation and reclamation, snapshot-based environment restoration, and cold-start latency designed to remain consistent across container image sizes and concurrency. AWS reports P75 cold starts of about 1.9–2.0 seconds for tested images from 200 MB to 2 GB, compared with 5.4–30 seconds on V1.",
+      "why_it_matters": "Runtime cost and responsiveness become less coupled to peak session memory and container size, which directly affects long-running, bursty, interactive, and ambient agents.",
+      "platform_impact": "AgentCore teams should treat V2 as an explicit runtime migration: benchmark representative images and concurrency, validate memory-sensitive behavior, confirm regional availability, and retain a rollback path before changing production workloads.",
+      "recommended_action": "Create a non-production V2 copy of one representative runtime, replay a fixed workload, and compare cold starts, end-to-end latency, memory usage, cost, errors, and session isolation against V1.",
+      "watchouts": "V2 is selected with platformVersion rather than silently replacing V1, and launch availability is limited to five AWS Regions. AWS benchmark figures use an empty echo agent and should be reproduced with real application images, model calls, tools, and traffic patterns.",
+      "confidence": "high",
+      "score": 21,
+      "citation_ids": [
+        "src-09",
+        "src-10"
+      ]
+    },
+    {
+      "id": "google-agent-anomaly-detection",
+      "title": "Google previews behavior-level anomaly detection for production agents",
+      "status": "preview",
+      "event_date": "2026-09-16",
+      "availability": "Private Preview for agents on Gemini Enterprise Agent Platform using ADK 1.2 or later.",
+      "what_changed": "Google introduced Agent Anomaly Detection, an asynchronous service that analyzes OpenTelemetry traces, tool calls, reasoning traces, and execution flow, then sends detected behavioral anomalies and policy violations to Security Command Center.",
+      "why_it_matters": "Agent security is moving beyond prompt and response filtering toward session-level detection of tool misuse, privilege abuse, cascading failures, and rogue behavior after execution.",
+      "platform_impact": "Bedrock and AgentCore teams can apply the same architecture by retaining correlated OpenTelemetry trajectories, screening sessions asynchronously, and routing severe findings into Security Hub or a SIEM.",
+      "recommended_action": "Select several representative agent sessions and define the anomalous behaviors, trace fields, severity thresholds, and incident-routing expectations an equivalent control would require.",
+      "watchouts": "The Google capability is private preview and is not an AWS service. Detection precision, false-positive rates, retention costs, and response latency require validation.",
+      "confidence": "high",
+      "score": 19,
+      "citation_ids": [
+        "src-01"
+      ]
+    },
+    {
+      "id": "agentcore-multitenant-isolation",
+      "title": "AWS documents hardened multi-tenant execution with AgentCore",
+      "status": "ga",
+      "event_date": "2026-09-17",
+      "availability": "Published production reference architecture using generally available Amazon Bedrock AgentCore Code Interpreter and AWS networking controls.",
+      "what_changed": "AWS and Benchling documented a production design that isolates untrusted agent-generated code in a separate AWS account without internet or NAT access, blocks DNS exfiltration with Route 53 Resolver DNS Firewall, applies VPC endpoint policies, and issues scoped per-job STS credentials.",
+      "why_it_matters": "The pattern treats sandbox isolation as a continuously tested security property and directly addresses DNS tunneling, a less obvious path for data exfiltration from constrained execution environments.",
+      "platform_impact": "This provides a concrete baseline for regulated, multi-tenant AgentCore deployments: account-level blast-radius reduction, explicit egress policy, short-lived job identity, and adversarial network tests in CI.",
+      "recommended_action": "Threat-model one current code-execution workflow and test whether DNS, metadata endpoints, VPC endpoints, or overbroad credentials could bypass its intended isolation boundary.",
+      "watchouts": "The operating figures are customer-reported, and the design increases account, DNS-policy, endpoint-policy, and test maintenance. Copying the diagram without reproducing its verification controls would provide weak assurance.",
+      "confidence": "high",
+      "score": 20,
+      "citation_ids": [
+        "src-02"
+      ]
+    },
+    {
+      "id": "github-agent-customization-telemetry",
+      "title": "GitHub ships telemetry for agent customizations and feature adoption",
+      "status": "ga",
+      "event_date": "2026-09-17",
+      "availability": "Available through GitHub Copilot usage reports, APIs, and the Copilot impact dashboard for supported organizational and enterprise scopes.",
+      "what_changed": "GitHub added usage reporting for skills, custom agents, MCP servers, slash commands, and plugins, plus rolling feature-engagement views covering agent edit, Copilot CLI, cloud agent, and active or passive code review.",
+      "why_it_matters": "Platform teams can measure which agent extensions are actually adopted instead of relying on seat assignment, aggregate chat counts, or anecdotal feedback.",
+      "platform_impact": "Internal Bedrock platforms need a similar telemetry contract separating connection attempts, successful invocations, active users, distinct tools or agents, reliability, and task outcomes.",
+      "recommended_action": "Define an adoption dashboard for the internal agent catalog before expanding it, including distinct tools used, failed and successful connections, active users, latency, and outcome quality.",
+      "watchouts": "GitHub's MCP metric counts connection attempts, including failures, rather than tool calls. Names of customer-defined agents and extensions may also require privacy and access controls.",
+      "confidence": "high",
+      "score": 18,
+      "citation_ids": [
+        "src-03",
+        "src-04"
+      ]
+    },
+    {
+      "id": "open-source-agent-interface-generation",
+      "title": "Google and Speakeasy open-source SDK, CLI, and MCP generation",
+      "status": "open_source",
+      "event_date": "2026-09-16",
+      "availability": "Open-source generator suite under AGPLv3; Google reports using the updated pipeline for its Interactions, Agents, and Webhooks APIs.",
+      "what_changed": "The released tooling generates typed SDKs for seven languages, agent-oriented command-line interfaces, and documentation MCP servers from governed OpenAPI specifications and supporting documentation.",
+      "why_it_matters": "A single API contract can produce deterministic human and agent interfaces without separate handwritten adapters, reducing interface drift while making generator provenance a supply-chain concern.",
+      "platform_impact": "Teams exposing internal services to Bedrock agents can generate constrained clients and documentation MCP servers from reviewed OpenAPI definitions rather than allowing agents to improvise raw HTTP calls.",
+      "recommended_action": "Run the generator against one non-sensitive internal API and evaluate output stability, authentication handling, retries, pagination, streaming, and MCP documentation quality.",
+      "watchouts": "The generator is AGPLv3. Legal review is required before modifying, embedding, or operating it in an enterprise build service, even though generated SDKs may use another license.",
+      "confidence": "high",
+      "score": 17,
+      "citation_ids": [
+        "src-05"
+      ]
+    },
+    {
+      "id": "anthropic-life-sciences-verification",
+      "title": "Anthropic launches verified access for higher-risk life-sciences use",
+      "status": "limited",
+      "event_date": "2026-09-17",
+      "availability": "Beta for verified teams and institutions through Anthropic's first-party API console and Claude Enterprise or Team; unavailable through third-party platforms and BAA-enabled organizations at launch.",
+      "what_changed": "Anthropic introduced Standard Use and more tightly reviewed High-risk Use grants tied to identity, institutional verification, declared use cases, time-bounded access, and 30-day offline monitoring across requests and sessions.",
+      "why_it_matters": "The program is a concrete governance pattern for dual-use AI that combines verified identity, scoped authorization, declared-purpose monitoring, renewal, and remediation instead of applying one uniform real-time prompt block.",
+      "platform_impact": "Bedrock users should treat this as both a reusable governance model and a capability gap because Anthropic explicitly excludes third-party platforms at launch.",
+      "recommended_action": "Map sensitive internal use cases to an access-grant lifecycle with named owners, declared purposes, renewal dates, audit retention, monitoring, and incident-response obligations.",
+      "watchouts": "The beta is not available through Amazon Bedrock at launch and cannot be used by BAA-enabled organizations. Do not imply support for PHI or third-party platform access.",
+      "confidence": "high",
+      "score": 16,
+      "citation_ids": [
+        "src-06"
+      ]
+    }
+  ],
+  "devops_impacts": [
+    {
+      "area": "reliability",
+      "text": "Benchmark AgentCore Runtime V2 with representative images and burst patterns before migration; validate cold starts, end-to-end latency, memory behavior, errors, and rollback rather than relying on an empty-agent benchmark alone.",
+      "citation_ids": [
+        "src-09",
+        "src-10"
+      ]
+    },
+    {
+      "area": "observability",
+      "text": "Treat complete agent trajectories, tool decisions, and identity changes as correlated operational and security telemetry, with explicit retention and incident-routing policies.",
+      "citation_ids": [
+        "src-01"
+      ]
+    },
+    {
+      "area": "security",
+      "text": "Test agent sandboxes adversarially in CI, including DNS tunneling, unauthorized VPC endpoint use, credential scope, metadata access, and cross-tenant isolation.",
+      "citation_ids": [
+        "src-02"
+      ]
+    },
+    {
+      "area": "governance",
+      "text": "Measure agent and tool adoption separately from successful use, task outcomes, and reliability; connection attempts alone can overstate operational value.",
+      "citation_ids": [
+        "src-03",
+        "src-04"
+      ]
+    },
+    {
+      "area": "developer-workflow",
+      "text": "Version API specifications and generator releases, review generated diffs, and keep license and provenance checks inside the build pipeline for agent-facing interfaces.",
+      "citation_ids": [
+        "src-05"
+      ]
+    }
+  ],
+  "bring_to_work": [
+    {
+      "title": "AgentCore Runtime V2 migration benchmark",
+      "what": "Replay one fixed agent workload on V1 and V2 and compare platform startup, total task latency, memory consumption, errors, and estimated cost.",
+      "fit": "Use a non-production copy of an existing AgentCore runtime in a supported Region, keeping the V1 deployment available as the rollback baseline.",
+      "effort": "medium",
+      "next_step": "Select one representative container and record a V1 baseline before creating or updating a runtime with platformVersion set to V2.",
+      "citation_ids": [
+        "src-09",
+        "src-10"
+      ]
+    },
+    {
+      "title": "Agent trajectory anomaly pilot",
+      "what": "Build an asynchronous detector over retained OpenTelemetry traces for one production-like agent workflow.",
+      "fit": "Use AgentCore observability data or equivalent traces and route high-severity findings to the existing AWS security operations path.",
+      "effort": "medium",
+      "next_step": "Define five concrete anomalous behaviors and label a small trace set before selecting a model or detection service.",
+      "citation_ids": [
+        "src-01"
+      ]
+    },
+    {
+      "title": "Sandbox exfiltration test",
+      "what": "Add a repeatable security test that attempts DNS tunneling, direct internet access, forbidden endpoint access, and credential misuse.",
+      "fit": "Apply it to AgentCore Code Interpreter or any containerized tool runner that executes generated code for multiple tenants.",
+      "effort": "medium",
+      "next_step": "Run the test against a non-production sandbox and document which layer blocks each attempted escape or exfiltration path.",
+      "citation_ids": [
+        "src-02"
+      ]
+    },
+    {
+      "title": "Agent catalog telemetry contract",
+      "what": "Define common adoption, reliability, cost, and outcome metrics for internal agents, MCP servers, skills, and tools.",
+      "fit": "Instrument the Bedrock platform gateway or tool registry so every extension reports compatible identifiers and success signals.",
+      "effort": "low",
+      "next_step": "Publish a one-page metric dictionary and add it to one agent before building an organization-wide dashboard.",
+      "citation_ids": [
+        "src-03",
+        "src-04"
+      ]
+    }
+  ],
+  "watchouts": [
+    {
+      "text": "AgentCore Runtime V2 requires an explicit platformVersion setting and launched in five AWS Regions; reproduce AWS cold-start results with real agent code, model calls, tools, image sizes, and concurrency before production migration.",
+      "citation_ids": [
+        "src-09",
+        "src-10"
+      ]
+    },
+    {
+      "text": "Do not describe Google's anomaly detector as generally available or as an AWS capability; it is a Gemini Enterprise Agent Platform private preview.",
+      "citation_ids": [
+        "src-01"
+      ]
+    },
+    {
+      "text": "The AgentCore isolation story is a production pattern, not a newly launched service feature, and its customer operating figures are not independently audited benchmarks.",
+      "citation_ids": [
+        "src-02"
+      ]
+    },
+    {
+      "text": "Review AGPLv3 obligations before operating or modifying the open-source generator suite inside enterprise infrastructure.",
+      "citation_ids": [
+        "src-05"
+      ]
+    },
+    {
+      "text": "GitHub announced six Copilot model retirements for October 19, 2026; inventory pinned model IDs and test replacements before the removal date.",
+      "citation_ids": [
+        "src-08"
+      ]
+    }
+  ],
+  "citations": [
+    {
+      "id": "src-01",
+      "title": "Agent Anomaly Detection, now in Private Preview",
+      "publisher": "Google Developers Blog",
+      "url": "https://developers.googleblog.com/en/agent-anomaly-detection-now-in-private-preview-on-the-gemini-enterprise-agent-platform",
+      "published_at": "2026-09-16",
+      "source_type": "primary"
+    },
+    {
+      "id": "src-02",
+      "title": "How Benchling secured multi-tenant AI agents with Amazon Bedrock AgentCore",
+      "publisher": "AWS Machine Learning Blog",
+      "url": "https://aws.amazon.com/blogs/machine-learning/how-benchling-secured-multi-tenant-ai-agents-with-amazon-bedrock-agentcore",
+      "published_at": "2026-09-17",
+      "source_type": "primary"
+    },
+    {
+      "id": "src-03",
+      "title": "Agentic CLI customizations now in the usage metrics API",
+      "publisher": "GitHub Changelog",
+      "url": "https://github.blog/changelog/2026-09-17-agentic-cli-customizations-now-in-the-usage-metrics-api",
+      "published_at": "2026-09-17",
+      "source_type": "primary"
+    },
+    {
+      "id": "src-04",
+      "title": "Copilot impact dashboard now shows feature engagement",
+      "publisher": "GitHub Changelog",
+      "url": "https://github.blog/changelog/2026-09-17-copilot-impact-dashboard-now-shows-feature-engagement",
+      "published_at": "2026-09-17",
+      "source_type": "primary"
+    },
+    {
+      "id": "src-05",
+      "title": "Why client SDK generation belongs in the open",
+      "publisher": "Google Developers Blog",
+      "url": "https://developers.googleblog.com/en/why-client-sdk-generation-belongs-in-the-open",
+      "published_at": "2026-09-16",
+      "source_type": "primary"
+    },
+    {
+      "id": "src-06",
+      "title": "Introducing the Life Sciences Verification Program",
+      "publisher": "Anthropic",
+      "url": "https://www.anthropic.com/news/life-sciences-verification-program",
+      "published_at": "2026-09-17",
+      "source_type": "primary"
+    },
+    {
+      "id": "src-08",
+      "title": "Upcoming deprecation of selected GitHub Copilot models",
+      "publisher": "GitHub Changelog",
+      "url": "https://github.blog/changelog/2026-09-18-upcoming-deprecation-of-selected-github-copilot-models-in-mid-october",
+      "published_at": "2026-09-18",
+      "source_type": "primary"
+    },
+    {
+      "id": "src-09",
+      "title": "The new AgentCore runtime: Elastic, optimized, and consistently fast starts",
+      "publisher": "AWS Machine Learning Blog",
+      "url": "https://aws.amazon.com/blogs/machine-learning/the-new-agentcore-runtime-elastic-optimized-and-consistently-fast-starts/",
+      "published_at": "2026-09-18",
+      "source_type": "primary"
+    },
+    {
+      "id": "src-10",
+      "title": "The new AgentCore Runtime is now available in Amazon Bedrock AgentCore",
+      "publisher": "AWS What's New",
+      "url": "https://aws.amazon.com/about-aws/whats-new/2026/09/new-agentcore-runtime-generally-available/",
+      "published_at": "2026-09-18",
+      "source_type": "primary"
+    }
+  ],
+  "telegram_text": "Weekly AI & Agentic Systems Digest — September 16–22, 2026 (Revision 2)\n\nCORRECTION\n\nThe first edition omitted AWS’s September 18 launch of the next-generation AgentCore Runtime. This revision adds it as the lead item and strengthens the source-coverage process.\n\nWHAT CHANGED\n\n1. AWS launches the next-generation AgentCore Runtime. V2 adds elastic memory allocation and reclamation plus snapshot-based startup. AWS reports P75 cold starts of roughly 1.9–2.0 seconds for tested container images from 200 MB to 2 GB, versus 5.4–30 seconds on V1. Why it matters: long-running and bursty agents can pay closer to actual memory usage while startup becomes less sensitive to image size and concurrency. V2 is explicitly selected with platformVersion and launched in five Regions. Sources: https://aws.amazon.com/blogs/machine-learning/the-new-agentcore-runtime-elastic-optimized-and-consistently-fast-starts/ and https://aws.amazon.com/about-aws/whats-new/2026/09/new-agentcore-runtime-generally-available/\n\n2. Google previews behavior-level agent anomaly detection. The private-preview service analyzes OpenTelemetry traces, tool calls, reasoning, and execution flow, then routes findings to Security Command Center. For Bedrock teams, the transferable pattern is asynchronous trajectory scoring and SIEM routing—not the Google product itself. Source: https://developers.googleblog.com/en/agent-anomaly-detection-now-in-private-preview-on-the-gemini-enterprise-agent-platform\n\n3. AWS documents hardened multi-tenant execution with AgentCore. Benchling isolates generated code in a separate AWS account, removes internet and NAT access, blocks DNS exfiltration, restricts VPC endpoints, and uses scoped per-job STS credentials. Sandbox trust becomes a continuously tested property. Source: https://aws.amazon.com/blogs/machine-learning/how-benchling-secured-multi-tenant-ai-agents-with-amazon-bedrock-agentcore\n\n4. GitHub ships agent-customization and feature-adoption telemetry. Usage reporting now covers skills, custom agents, MCP servers, commands, plugins, and feature engagement. MCP figures count connection attempts, including failures, rather than tool calls. Sources: https://github.blog/changelog/2026-09-17-agentic-cli-customizations-now-in-the-usage-metrics-api and https://github.blog/changelog/2026-09-17-copilot-impact-dashboard-now-shows-feature-engagement\n\n5. Google and Speakeasy open-source SDK, CLI, and documentation-MCP generation. The AGPLv3 suite generates typed SDKs, agent-oriented CLIs, and MCP servers from OpenAPI specifications. Source: https://developers.googleblog.com/en/why-client-sdk-generation-belongs-in-the-open\n\n6. Anthropic launches verified access for higher-risk life-sciences use. The beta combines identity and institutional verification, scoped grants, declared-purpose monitoring, renewal, and remediation. It was unavailable through Amazon Bedrock at launch. Source: https://www.anthropic.com/news/life-sciences-verification-program\n\nDEVOPS / PLATFORM IMPACT\n\n• Benchmark AgentCore Runtime V2 against V1 using real images, concurrency, model calls, tools, and complete task latency.\n• Retain complete agent trajectories as correlated security and operational telemetry.\n• Add DNS tunneling, endpoint misuse, credential-scope, and cross-tenant tests to sandbox CI.\n• Separate extension adoption, successful use, reliability, cost, and task outcomes in platform metrics.\n• Version API specifications and generator releases; review generated diffs and licensing obligations.\n\nBRING TO WORK\n\n• Runtime V2 benchmark — Medium: copy one non-production AgentCore runtime, record a V1 baseline, then replay the same workload on V2.\n• Agent anomaly pilot — Medium: label representative traces and define five behaviors worth detecting.\n• Sandbox exfiltration test — Medium: attempt DNS, internet, endpoint, metadata, and credential escapes.\n• Agent catalog metrics — Low: publish common adoption, reliability, cost, and outcome fields.\n\nWATCHOUTS\n\n• Runtime V2 is explicit, not an invisible replacement, and launched in us-east-1, us-east-2, us-west-2, eu-west-1, and ap-northeast-1.\n• AWS’s cold-start comparison uses an empty echo agent; reproduce it with the real application path.\n• Google’s detector is private preview, not an AWS capability.\n• Review AGPLv3 obligations before operating or modifying the generator suite.\n• Treat automated security and review findings as evidence to inspect, not proof of correctness.\n\nWeb publication: corrected dry-run prepared for approval."
+}
