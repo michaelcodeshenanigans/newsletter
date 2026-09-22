@@ -35,6 +35,7 @@ Primary sources are required for material claims. Other newsletters and secondar
 
 ```text
 Hermes weekly cron
+  -> enumerate and resolve mandatory priority-feed coverage
   -> research, deduplicate, score, and edit
   -> produce newsletter.v1 JSON
   -> send JSON to authenticated n8n webhook
@@ -53,12 +54,21 @@ No scheduled GitHub Actions workflow is needed.
 - `publisher/build-workflow.mjs` — generates the importable n8n workflow.
 - `n8n/weekly-ai-newsletter-publisher.json` — versioned workflow export.
 - `scripts/submit-to-n8n.mjs` — authenticated submission client; defaults to dry-run.
+- `scripts/source-coverage.mjs` — enumerates mandatory RSS entries and blocks drafting while any entry remains unreviewed.
 - `test/` — Node test suite covering validation, idempotency, rendering, and workflow structure.
 
 Run the checks with:
 
 ```bash
 npm test
+```
+
+Collect and resolve the priority-source coverage ledger before drafting:
+
+```bash
+node scripts/source-coverage.mjs collect --start YYYY-MM-DD --end YYYY-MM-DD --out /path/to/coverage.json
+# Mark every entry included or excluded, with a reason for exclusions.
+node scripts/source-coverage.mjs verify /path/to/coverage.json
 ```
 
 Preview an issue without writing to GitHub:

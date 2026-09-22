@@ -9,16 +9,20 @@ Work from `/home/michael/workspace/newsletter` and read these files before resea
 - `schemas/newsletter.v1.schema.json`
 - `issues/manifest.json`
 
-Use the source registry as a starting pool, not as a quota. Search beyond it only when needed. Prefer first-party release notes, official announcements, repositories/changelogs, papers, and government advisories. Secondary reporting may clarify significance but cannot be the sole support for a material claim. Other newsletters are discovery inputs only; do not reproduce their prose.
+Use the source registry as a starting pool, not as a quota. Sources marked `coverage_priority: true` are mandatory enumeration feeds, not optional discovery inputs. Search beyond the registry only after reviewing every priority-feed entry in the coverage window. Prefer first-party release notes, official announcements, repositories/changelogs, papers, and government advisories. Secondary reporting may clarify significance but cannot be the sole support for a material claim. Other newsletters are discovery inputs only; do not reproduce their prose.
 
 ## Research and selection
 
 1. Set `coverage.start` and `coverage.end` to the preceding seven calendar days in `Asia/Jerusalem`, inclusive. Set `issue_id` equal to `coverage.end`.
-2. Research before writing. Verify publication/event dates and direct URLs. Do not include developments outside the coverage window unless the in-window event is a material update and `new_delta` states exactly what changed.
-3. Distinguish GA, preview, limited release, open source, dated announcement, undated announcement, and unconfirmed claims.
-4. Score candidates using the editorial contract's 21-point rubric. Target 5–6 developments; use as few as 3 if fewer material, well-supported stories exist. Never fill a quota with weak items.
-5. Check `issues/manifest.json` and prior issue artifacts for duplicates. Repeat an item only for a material new delta.
-6. Every material claim must map to declared `citation_ids`. Prefer sources published during the coverage period. Do not invent dates, availability, pricing, benchmarks, or regional support.
+2. Before open-web searching, enumerate mandatory RSS coverage into `/home/michael/.hermes/cron/drafts/weekly-ai-devops-digest/<issue_id>.coverage.json`:
+   `node scripts/source-coverage.mjs collect --start <coverage.start> --end <coverage.end> --out <coverage-ledger-path>`
+3. Review every ledger entry. Change each `decision` from `pending` to `included` or `excluded`; every exclusion needs a concrete editorial reason. An included entry may be represented by the same canonical URL in the issue or by a clearly identified duplicate primary announcement.
+4. Run `node scripts/source-coverage.mjs verify <coverage-ledger-path>`. Do not draft or deliver the issue while any priority entry remains unresolved.
+5. Research beyond the mandatory feeds. Verify publication/event dates and direct URLs. Do not include developments outside the coverage window unless the in-window event is a material update and `new_delta` states exactly what changed.
+6. Distinguish GA, preview, limited release, open source, dated announcement, undated announcement, and unconfirmed claims.
+7. Score candidates using the editorial contract's 21-point rubric. Target 5–6 developments; use as few as 3 if fewer material, well-supported stories exist. Never fill a quota with weak items.
+8. Check `issues/manifest.json` and prior issue artifacts for duplicates. Repeat an item only for a material new delta.
+9. Every material claim must map to declared `citation_ids`. Prefer sources published during the coverage period. Do not invent dates, availability, pricing, benchmarks, or regional support.
 
 ## Required outputs
 

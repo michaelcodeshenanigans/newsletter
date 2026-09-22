@@ -4,7 +4,9 @@
   "type": "module",
   "scripts": {
     "test": "node --test",
-    "build:workflow": "node publisher/build-workflow.mjs"
+    "build:workflow": "node publisher/build-workflow.mjs",
+    "coverage:collect": "node scripts/source-coverage.mjs collect",
+    "coverage:verify": "node scripts/source-coverage.mjs verify"
   },
   "engines": {
     "node": ">=20"

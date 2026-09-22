@@ -112,6 +112,7 @@ sources:
     category: aws-releases
     authority: primary
     method: rss
+    coverage_priority: true
     url: "https://aws.amazon.com/about-aws/whats-new/recent/feed/"
     use: GA and preview launches, regions, and feature changes
     filters:
@@ -126,6 +127,7 @@ sources:
     category: bedrock-ai
     authority: primary-guidance
     method: rss
+    coverage_priority: true
     url: "https://aws.amazon.com/blogs/machine-learning/feed/"
     use: Bedrock patterns, agents, RAG, and model integrations
 
