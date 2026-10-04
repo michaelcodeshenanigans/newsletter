@@ -78,10 +78,10 @@ GitHub Pages: /newsletter/
 
 ### GitHub
 
+- Publishes directly to `main` after a successful validation and dry-run.
 - Stores all published issues and publication metadata.
 - Provides the durable deduplication ledger.
 - Hosts the generated site through GitHub Pages.
-- Optionally provides pull-request approval before publication.
 
 ## Artifact contract
 
@@ -207,22 +207,16 @@ Web edition: publication failed; the editorial digest was delivered normally.
 
 Web publication failure must never suppress Telegram delivery.
 
-## Approval modes
+## Publication mode
 
-### Initial rollout: pull-request approval
+The weekly Hermes cron is pre-authorized to publish a newsletter artifact only when all of the following succeed:
 
-For the first issues, n8n should:
+1. Local schema validation.
+2. Authenticated n8n dry-run validation.
+3. An authenticated n8n publish request for the unchanged artifact.
+4. n8n verification that the resulting Git ref matches the generated commit.
 
-1. Create or update `newsletter/<issue_id>-r<revision>`.
-2. Commit the complete rendered publication to that branch.
-3. Open or reuse a pull request against `main`.
-4. Return the pull-request URL to Hermes.
-
-Merging the pull request publishes the issue. This gives a visible HTML diff and protects the public site while templates and prompts stabilize.
-
-### Later rollout: automatic publication
-
-After several successful issues, n8n may commit directly to `main`. Idempotency and verification requirements remain unchanged.
+n8n commits directly to `main`, which triggers GitHub Pages. Its idempotency check returns `idempotent_noop` when the same issue revision and content hash are already published. Manual `--publish` remains available for recovery or replay; it follows the same checks.
 
 ## Secrets and permissions
 
@@ -275,9 +269,9 @@ A deterministic collector reduces research latency and leaves more of the cron r
 
 1. Preserve this architecture, source registry, editorial contract, and schema in the repository.
 2. Build the deterministic site renderer and static template.
-3. Build the n8n webhook in pull-request approval mode.
+3. Build the n8n webhook with direct-to-`main` atomic publication after dry-run validation.
 4. Add a reusable Hermes newsletter skill containing collection and publisher helpers.
-5. Update the existing cron prompt to load that skill and submit `newsletter.v1`.
-6. Run the existing cron manually to generate the first issue.
-7. Validate Telegram output, pull-request diff, links, mobile rendering, archive, feed, and idempotent replay.
-8. Keep manual approval until the publication path is stable.
+5. Update the existing cron prompt to load that skill, submit `newsletter.v1`, and publish only after a successful dry-run.
+6. Run the existing cron manually to generate and publish the first issue.
+7. Validate Telegram output, published links, mobile rendering, archive, feed, and idempotent replay.
+8. Keep the single Hermes schedule; publish failures must be visible in the Telegram footer.

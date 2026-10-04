@@ -77,4 +77,4 @@ Preview an issue without writing to GitHub:
 node scripts/submit-to-n8n.mjs /path/to/issue.json
 ```
 
-`--publish` is intentionally explicit and must only be used after editorial approval.
+The weekly Hermes cron performs this dry-run first and then publishes the same validated artifact automatically. `--publish` remains explicit for manual recovery or replay.

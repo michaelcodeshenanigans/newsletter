@@ -42,11 +42,15 @@ Write the JSON artifact to:
 
 Create the directory if necessary. Validate the artifact locally by importing `validateIssue` from `publisher/newsletter.mjs` with Node.js. If validation fails, correct the artifact before continuing.
 
-Submit the artifact to the n8n publisher in **dry-run mode only**:
+Submit the artifact to the authenticated n8n publisher in dry-run mode:
 
 `node /home/michael/workspace/newsletter/scripts/submit-to-n8n.mjs <artifact-path>`
 
-Do not pass `--publish`. A publication preview failure must not suppress the Telegram digest.
+Require a successful response with `ok: true`. If `would_publish: true`, immediately publish the same validated artifact:
+
+`node /home/michael/workspace/newsletter/scripts/submit-to-n8n.mjs <artifact-path> --publish`
+
+Require a successful response with `status: "published"` or `status: "idempotent_noop"` before reporting success. A dry-run or publication failure must not suppress the Telegram digest; instead, state that web publication failed and include the error.
 
 ## Telegram edition
 
@@ -58,6 +62,6 @@ Return only the human-readable digest for Telegram, under roughly 1,200 words:
 4. **Bring to work** — what it is, fit for an Amazon Bedrock/Bedrock AgentCore stack, effort, and one bounded next step.
 5. **Watchouts** — licensing, hosting, security, regional availability, cost, or claims that still need validation.
 6. **Sources** — compact direct links.
-7. Final operational line: `Web publication: dry-run prepared for approval.` If n8n failed, instead state `Web publication preview failed; Telegram digest unaffected.`
+7. Final operational line: `Web publication: published and verified.` Only use this after the publisher returns `status: "published"` or `status: "idempotent_noop"`; otherwise state `Web publication failed; Telegram digest unaffected.` and include the error.
 
-Use original wording, concise prose, and calibrated confidence. Do not publicly publish or commit an issue without explicit user approval.
+Use original wording, concise prose, and calibrated confidence. Publication is pre-authorized for this scheduled newsletter only after local validation and a successful n8n dry-run; do not publish any other content or a schema-invalid artifact.
