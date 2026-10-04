@@ -1,0 +1,299 @@
+{
+  "schema_version": "newsletter.v1",
+  "issue_id": "2026-10-03",
+  "revision": 1,
+  "generated_at": "2026-10-03T12:00:52+03:00",
+  "timezone": "Asia/Jerusalem",
+  "coverage": {
+    "start": "2026-09-27",
+    "end": "2026-10-03"
+  },
+  "title": "Weekly AI & Agentic Systems Digest — September 27–October 3, 2026",
+  "summary": "This week shifted agent platforms from components toward managed control planes. AWS previewed a stateful OpenAI-powered agent service, tightened private AgentCore connectivity, and widened in-country Claude inference. Anthropic and OpenAI added model-routing candidates, while GitHub previewed code-defined multi-agent workflows. The operational priority is controlled evaluation before production standardization.",
+  "developments": [
+    {
+      "id": "bedrock-managed-agents-preview",
+      "title": "Bedrock Managed Agents enters preview as an AWS-native OpenAI agent control plane",
+      "status": "preview",
+      "event_date": "2026-09-29",
+      "availability": "Preview through supported APIs in US East (N. Virginia), US West (Oregon), and US East (Ohio). During preview, AWS charges only for underlying consumed resources; service pricing may change at GA.",
+      "what_changed": "AWS and OpenAI jointly released Bedrock Managed Agents, built on a customized OpenAI Agents API engineered for AWS. It manages durable sessions, messages, tool calls, intermediate results, tool selection, code execution, reusable skills, MCP connections, per-agent IAM roles, human approval, and supported CloudTrail activity.",
+      "why_it_matters": "Bedrock teams now have another managed orchestration control plane that can retain progress across sessions while using familiar AWS identity and governance controls.",
+      "platform_impact": "Architecture teams must compare Bedrock Managed Agents with AgentCore and custom frameworks across state ownership, identity, tool interfaces, evaluation, observability, recovery, portability, and failure isolation.",
+      "recommended_action": "Rebuild one non-production multi-step workflow in Bedrock Managed Agents and the current platform, then compare ten frozen scenarios without production credentials.",
+      "watchouts": "This is a three-Region preview. Pricing may change at GA, and the reviewed source does not establish feature parity with OpenAI’s native platform or AgentCore.",
+      "confidence": "high",
+      "score": 20,
+      "citation_ids": [
+        "src-01"
+      ],
+      "prior_issue": null,
+      "new_delta": null
+    },
+    {
+      "id": "claude-sonnet-5-5",
+      "title": "Claude Sonnet 5.5 ships across Anthropic platforms, including AWS",
+      "status": "ga",
+      "event_date": "2026-09-27",
+      "availability": "Available on Anthropic platforms and through Amazon Web Services, Google Cloud, and Microsoft Azure. The reviewed source does not enumerate exact AWS Regions or Bedrock feature support.",
+      "what_changed": "Anthropic released Claude Sonnet 5.5 as a faster, lower-cost complement to Opus 5.5 for bounded coding and knowledge work. List pricing is $2 per million input tokens, $10 per million output tokens, and $0.20 per million cache-read tokens. Applications that run Sonnet with thinking disabled must migrate to the between_tools setting.",
+      "why_it_matters": "The model creates a new candidate for high-volume agent and developer workflows where teams want a middle tier between premium reasoning and small utility models.",
+      "platform_impact": "Routing policies and SDK configurations need explicit migration tests for effort settings, thinking behavior, tool use, token consumption, latency, and AWS platform support.",
+      "recommended_action": "Add Sonnet 5.5 to the frozen model-routing regression suite before changing any default route or replacing Sonnet 5.",
+      "watchouts": "Anthropic’s benchmark, speed, and task-level cost claims are vendor-reported. Reproduce them under your prompts, tools, effort settings, caching, and Region.",
+      "confidence": "high",
+      "score": 20,
+      "citation_ids": [
+        "src-06"
+      ],
+      "prior_issue": null,
+      "new_delta": null
+    },
+    {
+      "id": "gpt-6-1-sol-bedrock",
+      "title": "GPT-6.1 Sol reaches GA on Amazon Bedrock with explicit prompt caching",
+      "status": "ga",
+      "event_date": "2026-09-29",
+      "availability": "Available through the Amazon Bedrock console and supported APIs. Exact Regions, endpoints, inference profiles, APIs, features, and pricing must be checked in Bedrock documentation.",
+      "what_changed": "AWS made OpenAI GPT-6.1 Sol generally available on Amazon Bedrock. The update succeeds GPT-6 Sol and supports explicit prompt caching for repeated-context agent workloads; AWS and OpenAI also report improvements in agentic coding, computer use, and professional work.",
+      "why_it_matters": "Prompt caching may change the latency and cost profile of recurring agents that repeatedly reuse large instructions or codebase context.",
+      "platform_impact": "Model routers, cache policy, quotas, regression tests, latency budgets, and cost forecasts should be recalibrated before production replacement.",
+      "recommended_action": "Compare GPT-6.1 Sol with the current default on fifty fixed tasks, recording task success, tool errors, latency, cache hit rate, token use, and estimated cost.",
+      "watchouts": "The launch page does not provide independent benchmark evidence. Verify exact Bedrock Region, feature, quota, and pricing support for the intended workload.",
+      "confidence": "high",
+      "score": 19,
+      "citation_ids": [
+        "src-02"
+      ],
+      "prior_issue": "https://michaelcodeshenanigans.github.io/newsletter/issues/2026-09-26.html",
+      "new_delta": "Since the September 20–26 issue, GPT-6 Sol advanced to GPT-6.1 Sol and added explicit prompt caching on Amazon Bedrock."
+    },
+    {
+      "id": "agentcore-private-ca-tls",
+      "title": "AgentCore Gateway adds private-CA TLS trust for private VPC targets",
+      "status": "ga",
+      "event_date": "2026-10-02",
+      "availability": "Available in Regions where both Amazon Bedrock AgentCore Gateway and Amazon VPC Lattice are available, for MCP, OpenAPI, and HTTP proxy targets.",
+      "what_changed": "AgentCore Gateway can now connect to targets whose TLS certificates are signed by an organization’s private certificate authority. Gateway retrieves a PEM-encoded CA certificate from Amazon S3 or AWS Secrets Manager and uses it as the trust anchor for outbound TLS connections to VPC Lattice private endpoints.",
+      "why_it_matters": "Teams can connect privately to internal tools without inserting an Application Load Balancer solely to bridge certificate trust.",
+      "platform_impact": "Certificate storage permissions, rotation, hostname validation, VPC Lattice policy, endpoint reachability, and audit evidence become explicit controls in the agent tool path.",
+      "recommended_action": "Connect one private MCP test server, rotate its CA certificate once, deny certificate-store access, and verify expected success, failure, and audit signals.",
+      "watchouts": "Removing an intermediate load balancer does not remove certificate lifecycle, least-privilege, endpoint policy, or network-path testing obligations.",
+      "confidence": "high",
+      "score": 20,
+      "citation_ids": [
+        "src-03"
+      ],
+      "prior_issue": null,
+      "new_delta": null
+    },
+    {
+      "id": "claude-in-country-bedrock-expansion",
+      "title": "Bedrock expands in-country Claude inference across India, Seoul, Singapore, and London",
+      "status": "ga",
+      "event_date": "2026-09-30",
+      "availability": "India uses geographic cross-Region inference across Mumbai and Hyderabad for listed Claude models. Seoul, Singapore, and London provide in-region inference for the specific models named in the announcements.",
+      "what_changed": "AWS added India processing options for Claude Opus 5, Sonnet 5, and Haiku 4.5; Seoul in-region inference for Opus 5 and Sonnet 5; Singapore in-region inference for Sonnet 5; and London in-region inference for Opus 5.5 and Sonnet 5.",
+      "why_it_matters": "Regulated teams gain more choices for keeping inference inside a required country or geography without abandoning the Bedrock control plane.",
+      "platform_impact": "Residency documentation must distinguish single-Region processing from India geographic cross-Region routing and must record model-specific endpoint, failover, logging, and disaster-recovery behavior.",
+      "recommended_action": "For one regulated workload, map selected models to exact Bedrock endpoints and capture evidence for processing location, fallback, logging, and disaster recovery.",
+      "watchouts": "Model coverage differs by country and Region. Do not generalize one endpoint’s residency behavior to another model or geography.",
+      "confidence": "high",
+      "score": 20,
+      "citation_ids": [
+        "src-04",
+        "src-05"
+      ],
+      "prior_issue": null,
+      "new_delta": null
+    },
+    {
+      "id": "github-copilot-dynamic-workflows",
+      "title": "GitHub previews code-defined dynamic workflows for deterministic multi-agent processes",
+      "status": "preview",
+      "event_date": "2026-10-01",
+      "availability": "Public preview on all Copilot plans in the GitHub Copilot app, Copilot CLI, and Copilot SDK. CLI use requires experimental mode; the Copilot app enables workflows directly.",
+      "what_changed": "GitHub added dynamic workflows: programs that combine automated steps with one or more agents. Workflows can run tasks sequentially or in parallel, pass structured results, cross-check findings, request human input, and pause at checkpoints.",
+      "why_it_matters": "Agentic developer workflows can place repeatable orchestration, limits, and verification in code while reserving analysis and judgment for models.",
+      "platform_impact": "Teams should treat workflow definitions as versioned automation code with tests, review, observability, spending limits, resumability, and rollback rather than as reusable prompts.",
+      "recommended_action": "Recreate one bounded release-check or code-review process and test deterministic steps, agent handoffs, pause and resume, failure recovery, and cost ceilings.",
+      "watchouts": "Dynamic workflows are public preview and subject to change. Avoid making them a production-critical release dependency without version pinning and rollback.",
+      "confidence": "high",
+      "score": 18,
+      "citation_ids": [
+        "src-07"
+      ],
+      "prior_issue": null,
+      "new_delta": null
+    }
+  ],
+  "devops_impacts": [
+    {
+      "area": "architecture",
+      "text": "Bedrock Managed Agents introduces another AWS-native orchestration boundary alongside AgentCore and custom frameworks; standardization should follow a control-plane comparison, not product naming.",
+      "citation_ids": [
+        "src-01"
+      ]
+    },
+    {
+      "area": "security",
+      "text": "Private-CA Gateway support simplifies private connectivity, but certificate-store permissions, rotation, VPC Lattice policy, hostname validation, and audit signals remain production controls.",
+      "citation_ids": [
+        "src-03"
+      ]
+    },
+    {
+      "area": "data-residency",
+      "text": "In-country inference now represents different routing models: single-Region processing in Seoul, Singapore, and London versus geographic cross-Region inference within India.",
+      "citation_ids": [
+        "src-04",
+        "src-05"
+      ]
+    },
+    {
+      "area": "cost",
+      "text": "Model upgrades need fixed regressions for task success, tool correctness, latency, cache behavior, token use, and total cost because vendor efficiency claims do not establish workload economics.",
+      "citation_ids": [
+        "src-02",
+        "src-06"
+      ]
+    },
+    {
+      "area": "developer-workflow",
+      "text": "Code-defined agent workflows improve reproducibility but require the same versioning, review, testing, observability, spending limits, and rollback discipline as other automation code.",
+      "citation_ids": [
+        "src-07"
+      ]
+    }
+  ],
+  "bring_to_work": [
+    {
+      "title": "Managed-agent control-plane bake-off",
+      "what": "Rebuild one non-production multi-step workflow in Bedrock Managed Agents and the existing AgentCore or custom implementation.",
+      "fit": "Direct fit for teams deciding where AWS-native agent state, tools, approvals, identity, and audit boundaries should live.",
+      "effort": "medium",
+      "next_step": "Freeze ten scenarios and compare IAM boundaries, durable state, approvals, MCP integration, traces, recovery, and lock-in without production credentials.",
+      "citation_ids": [
+        "src-01"
+      ]
+    },
+    {
+      "title": "Private Gateway trust test",
+      "what": "Connect one private MCP target through AgentCore Gateway using a private-CA certificate.",
+      "fit": "Direct fit for AgentCore deployments that expose internal VPC tools through MCP, OpenAPI, or HTTP proxy targets.",
+      "effort": "low",
+      "next_step": "Rotate the certificate, deny certificate-store access, and confirm the expected success, failure, and audit events.",
+      "citation_ids": [
+        "src-03"
+      ]
+    },
+    {
+      "title": "Model-routing regression",
+      "what": "Compare the current default, GPT-6.1 Sol, and Claude Sonnet 5.5 on fifty representative tasks.",
+      "fit": "Direct fit for Bedrock model routing; use only configurations and Regions actually supported by the intended production path.",
+      "effort": "medium",
+      "next_step": "Keep prompts and tool environments fixed, then record completion quality, tool errors, latency, caching, tokens, and estimated cost.",
+      "citation_ids": [
+        "src-02",
+        "src-06"
+      ]
+    },
+    {
+      "title": "Residency evidence pack",
+      "what": "Map one regulated Claude workload to exact Bedrock models, endpoints, and Regions.",
+      "fit": "Direct fit for financial services, healthcare, public-sector, or other teams with country-specific processing obligations.",
+      "effort": "low",
+      "next_step": "Capture processing-location, fallback, logging, and disaster-recovery evidence, separating India geographic routing from single-Region inference.",
+      "citation_ids": [
+        "src-04",
+        "src-05"
+      ]
+    }
+  ],
+  "watchouts": [
+    {
+      "text": "Bedrock Managed Agents is a three-Region preview; pricing may change at GA, and feature parity with OpenAI’s native platform or AgentCore is not established.",
+      "citation_ids": [
+        "src-01"
+      ]
+    },
+    {
+      "text": "Sonnet 5.5 and GPT-6.1 Sol performance and efficiency statements are vendor claims until reproduced under your prompts, tools, effort settings, caching, and Region.",
+      "citation_ids": [
+        "src-02",
+        "src-06"
+      ]
+    },
+    {
+      "text": "Private-CA support reduces proxy infrastructure but does not remove certificate lifecycle, trust-store authorization, endpoint policy, or network-path testing.",
+      "citation_ids": [
+        "src-03"
+      ]
+    },
+    {
+      "text": "Dynamic workflows are public preview; pin versions and avoid making them a production-critical release gate without rollback and cost controls.",
+      "citation_ids": [
+        "src-07"
+      ]
+    }
+  ],
+  "citations": [
+    {
+      "id": "src-01",
+      "title": "Amazon Bedrock Managed Agents, powered by OpenAI, is now available in preview",
+      "publisher": "Amazon Web Services",
+      "url": "https://aws.amazon.com/about-aws/whats-new/2026/09/bedrock-managed-agents-preview/",
+      "published_at": "2026-09-29",
+      "source_type": "primary"
+    },
+    {
+      "id": "src-02",
+      "title": "OpenAI GPT-6.1 Sol is now generally available on Amazon Bedrock",
+      "publisher": "Amazon Web Services",
+      "url": "https://aws.amazon.com/about-aws/whats-new/2026/09/openai-gpt-6-1-sol-on-amazon-bedrock/",
+      "published_at": "2026-09-29",
+      "source_type": "primary"
+    },
+    {
+      "id": "src-03",
+      "title": "AgentCore Gateway supports private TLS certificates for VPC endpoints",
+      "publisher": "Amazon Web Services",
+      "url": "https://aws.amazon.com/about-aws/whats-new/2026/10/agentcore-gateway-private-tls-vpc/",
+      "published_at": "2026-10-02",
+      "source_type": "primary"
+    },
+    {
+      "id": "src-04",
+      "title": "Amazon Bedrock expands Claude model availability to India, South Korea, and Singapore",
+      "publisher": "Amazon Web Services",
+      "url": "https://aws.amazon.com/about-aws/whats-new/2026/09/claude-region-expansion-in-sk/",
+      "published_at": "2026-09-29",
+      "source_type": "primary"
+    },
+    {
+      "id": "src-05",
+      "title": "Amazon Bedrock expands Claude models in-region support in the UK (London)",
+      "publisher": "Amazon Web Services",
+      "url": "https://aws.amazon.com/about-aws/whats-new/2026/09/claude-region-expansion-lhr/",
+      "published_at": "2026-09-30",
+      "source_type": "primary"
+    },
+    {
+      "id": "src-06",
+      "title": "Claude Sonnet 5.5",
+      "publisher": "Anthropic",
+      "url": "https://www.anthropic.com/claude-sonnet-5-5",
+      "published_at": "2026-09-27",
+      "source_type": "primary"
+    },
+    {
+      "id": "src-07",
+      "title": "Dynamic workflows in Copilot CLI and the Copilot app",
+      "publisher": "GitHub Changelog",
+      "url": "https://github.blog/changelog/2026-10-01-dynamic-workflows-in-copilot-cli-and-the-copilot-app/",
+      "published_at": "2026-10-01",
+      "source_type": "primary"
+    }
+  ],
+  "telegram_text": "# Weekly AI & Agentic Systems Digest — September 27–October 3, 2026\n\nThis week shifted agent platforms from components toward managed control planes.[1][3][7]\nAWS previewed a stateful OpenAI-powered agent service, tightened private connectivity for AgentCore tools, and widened in-country Claude inference.[1][3][4]\nAnthropic and OpenAI added model-routing candidates, while GitHub made deterministic multi-agent orchestration a first-class preview.[2][6][7]\nThe practical theme is controlled evaluation: compare control planes, prove network trust, and benchmark models before changing production defaults.[1][2][3]\n\n## What changed\n\n**1. Bedrock Managed Agents entered preview.** AWS and OpenAI jointly built a customized Agents API that runs inside AWS.[1]\nIt manages durable sessions, state, tool selection, code execution, reusable skills, Model Context Protocol (MCP) connections, per-agent IAM roles, human approval, and supported CloudTrail activity.[1]\nThe preview is available through APIs in Northern Virginia, Oregon, and Ohio, with no additional service charge beyond consumed AWS resources during preview.[1]\nThis is a new orchestration control plane, not an AgentCore feature rename.[1] [AWS](https://aws.amazon.com/about-aws/whats-new/2026/09/bedrock-managed-agents-preview/)\n\n**2. Claude Sonnet 5.5 shipped across Anthropic’s platforms, including AWS.** Anthropic positions it as the faster, lower-cost complement to Opus 5.5 for bounded coding and knowledge work.[6]\nPricing remains $2 per million input tokens and $10 per million output tokens; Anthropic reports lower task-level token use and faster generation, but those performance and cost claims require workload-specific reproduction.[6]\nA migration detail matters: applications running Sonnet with thinking disabled must adopt the new `between_tools` setting.[6] [Anthropic](https://www.anthropic.com/claude-sonnet-5-5)\n\n**3. GPT-6.1 Sol is GA on Amazon Bedrock.** The update succeeds the GPT-6 Sol release covered last week and adds explicit prompt caching for repeated-context agent workloads.[2]\nAWS and OpenAI describe stronger agentic coding, computer use, and professional-work performance, but the launch page does not establish independent benchmark results.[2]\nTreat this as a new routing candidate; exact Regions, inference profiles, APIs, features, and pricing remain configuration checks.[2] [AWS](https://aws.amazon.com/about-aws/whats-new/2026/09/openai-gpt-6-1-sol-on-amazon-bedrock/)\n\n**4. AgentCore Gateway now trusts private certificate authorities.** Gateway targets using MCP, OpenAPI, or HTTP proxy interfaces can use TLS certificates issued by an organization’s private CA.[3]\nAgentCore retrieves the PEM-encoded CA certificate from Amazon S3 or AWS Secrets Manager and uses it as the outbound trust anchor for VPC Lattice private endpoints, removing the prior need for an intermediate Application Load Balancer in this pattern.[3]\nAvailability follows Regions supporting both AgentCore Gateway and VPC Lattice.[3] [AWS](https://aws.amazon.com/about-aws/whats-new/2026/10/agentcore-gateway-private-tls-vpc/)\n\n**5. Bedrock expanded in-country Claude inference.** Claude Opus 5, Sonnet 5, and Haiku 4.5 gained India processing options; Opus 5 and Sonnet 5 gained Seoul in-region inference; Sonnet 5 gained Singapore; and Opus 5.5 plus Sonnet 5 gained London.[4][5]\nAWS states that Seoul, Singapore, and London in-region requests remain within the called Region, while India uses geographic cross-Region inference across Mumbai and Hyderabad.[4][5]\nThis changes residency architecture, not merely endpoint convenience.[4][5] [Asia expansion](https://aws.amazon.com/about-aws/whats-new/2026/09/claude-region-expansion-in-sk/) [London expansion](https://aws.amazon.com/about-aws/whats-new/2026/09/claude-region-expansion-lhr/)\n\n**6. GitHub previewed code-defined dynamic workflows.** Copilot CLI, the Copilot app, and the Copilot SDK can now run reusable programs that combine deterministic steps with one or more agents, including parallel tasks, structured handoffs, cross-checking, checkpoints, and human input.[7]\nThe feature is on all Copilot plans; the app enables it directly, while CLI use requires experimental mode.[7]\nThis is public preview and should be treated as a workflow-engine evaluation, not a stable deployment dependency.[7] [GitHub](https://github.blog/changelog/2026-10-01-dynamic-workflows-in-copilot-cli-and-the-copilot-app/)\n\n## DevOps / platform impact\n\n- **Architecture:** Bedrock Managed Agents introduces another AWS-native orchestration boundary alongside AgentCore and custom frameworks. Compare identity, state, tools, evaluation, observability, portability, and failure recovery before standardizing.[1]\n- **Security:** Private-CA support simplifies private Gateway connectivity, but S3 or Secrets Manager permissions, certificate rotation, VPC Lattice policy, and hostname validation become production controls.[3]\n- **Data residency:** “In-country” now means different routing models: single-Region processing in Seoul, Singapore, and London versus India geographic cross-Region inference. Document the exact endpoint and failover behavior in compliance evidence.[4][5]\n- **Cost and reliability:** Model upgrades should pass fixed regression suites measuring task success, tool correctness, latency, cache hit rate, token use, and total cost; vendor benchmark and efficiency claims are starting hypotheses.[2][6]\n- **Developer workflow:** Code-defined agent workflows improve reproducibility, but preview APIs and generated orchestration code require version pinning, review, spending limits, resumability tests, and audit logs.[7]\n\n## Bring to work\n\n**Managed-agent control-plane bake-off — medium effort.** Direct fit for a Bedrock stack. Rebuild one non-production, multi-step workflow in Bedrock Managed Agents and the current AgentCore or custom implementation; compare IAM boundaries, durable state, approvals, MCP integration, traces, recovery, and lock-in. Start with ten frozen scenarios and no production credentials.[1]\n\n**Private Gateway trust test — low effort.** Direct fit for AgentCore Gateway. Connect one private MCP test server using a private-CA certificate, rotate the certificate once, deny access to the certificate store, and confirm expected success, failure, and audit signals.[3]\n\n**Model-routing regression — medium effort.** Compare the current default, GPT-6.1 Sol, and Claude Sonnet 5.5 on fifty representative tasks. Keep prompts and tool environments fixed; record completion quality, tool errors, latency, caching, tokens, and estimated cost. Do not change routing until failures are reviewed.[2][6]\n\n**Residency evidence pack — low effort.** For one regulated workload, map chosen Claude models to exact Bedrock endpoints and Regions, then capture evidence for processing location, fallback, logging, and disaster recovery. Separate India geographic routing from single-Region inference elsewhere.[4][5]\n\n## Watchouts\n\n- Bedrock Managed Agents is a three-Region preview; pricing may change at GA, and feature parity with OpenAI’s native platform or AgentCore is not established.[1]\n- Sonnet 5.5 and GPT-6.1 Sol performance and efficiency statements are vendor claims until reproduced under your prompts, tools, effort settings, caching, and Region.[2][6]\n- Private-CA support reduces proxy infrastructure but does not remove certificate lifecycle, trust-store authorization, endpoint policy, or network-path testing.[3]\n- Dynamic workflows are public preview; pin versions and avoid making them a production-critical release gate without rollback and cost controls.[7]\n\n## Sources\n\n[1] https://aws.amazon.com/about-aws/whats-new/2026/09/bedrock-managed-agents-preview — Amazon Bedrock Managed Agents, powered by OpenAI, is now available in preview\n[2] https://aws.amazon.com/about-aws/whats-new/2026/09/openai-gpt-6-1-sol-on-amazon-bedrock — OpenAI GPT-6.1 Sol is now generally available on Amazon Bedrock\n[3] https://aws.amazon.com/about-aws/whats-new/2026/10/agentcore-gateway-private-tls-vpc — AgentCore Gateway supports private TLS certificates for VPC endpoints\n[4] https://aws.amazon.com/about-aws/whats-new/2026/09/claude-region-expansion-in-sk — Amazon Bedrock expands Claude model availability to India, South Korea, and Singapore\n[5] https://aws.amazon.com/about-aws/whats-new/2026/09/claude-region-expansion-lhr — Amazon Bedrock expands Claude models in-region support in the UK (London)\n[6] https://www.anthropic.com/claude-sonnet-5-5 — Claude Sonnet 5.5\n[7] https://github.blog/changelog/2026-10-01-dynamic-workflows-in-copilot-cli-and-the-copilot-app — Dynamic workflows in Copilot CLI and the Copilot app\n\nWeb publication: dry-run prepared for approval."
+}
