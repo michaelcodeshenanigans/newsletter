@@ -2,6 +2,18 @@
   "version": 1,
   "issues": [
     {
+      "issue_id": "2026-10-10",
+      "revision": 1,
+      "title": "Weekly AI & Agentic Systems Digest — October 4–10, 2026",
+      "coverage": {
+        "start": "2026-10-04",
+        "end": "2026-10-10"
+      },
+      "published_at": "2026-10-10T12:08:10+03:00",
+      "path": "issues/2026-10-10.md",
+      "content_hash": "844113df94e3b234c9a420f8305c535a3132b60a9b889c06a5da1f851cf43451"
+    },
+    {
       "issue_id": "2026-10-03",
       "revision": 1,
       "title": "Weekly AI & Agentic Systems Digest — September 27–October 3, 2026",
