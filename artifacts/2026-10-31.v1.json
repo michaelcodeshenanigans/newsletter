@@ -1,0 +1,310 @@
+{
+  "schema_version": "newsletter.v1",
+  "issue_id": "2026-10-31",
+  "revision": 1,
+  "generated_at": "2026-10-31T12:08:35+02:00",
+  "timezone": "Asia/Jerusalem",
+  "coverage": {
+    "start": "2026-10-25",
+    "end": "2026-10-31"
+  },
+  "title": "Weekly AI & Agentic Systems Digest — October 25–31, 2026",
+  "summary": "This week made agent systems more operable—and made their trust boundaries harder to ignore. AWS added a new Bedrock model, a production AgentCore CLI, and governed Step Functions tool exposure. MCP reference servers shipped urgent hardening, GitHub moved natural-language agentic workflows to general availability, and NIST published an identity design baseline centered on distinct agent identities, bounded delegation, deterministic enforcement, and tamper-evident audit.",
+  "developments": [
+    {
+      "id": "bedrock-gpt-6-1-terra-ga",
+      "title": "OpenAI GPT-6.1 Terra becomes generally available on Amazon Bedrock",
+      "status": "ga",
+      "event_date": "2026-10-26",
+      "availability": "Available through Amazon Bedrock in US West (Oregon) with US cross-Region inference; server-side tool use is supported through the Responses API.",
+      "what_changed": "AWS made OpenAI GPT-6.1 Terra generally available on Amazon Bedrock. AWS describes it as a long-horizon model for software engineering, cybersecurity, mathematics, science, and finance, with native computer-use support and server-side tool use through the Responses API.",
+      "why_it_matters": "Bedrock teams gained another managed model candidate for long-running coding and tool-use workloads without creating a separate provider control plane.",
+      "platform_impact": "Model routing, evaluation, quota, latency, cost, refusal behavior, tool-call semantics, and regional data paths need to be tested before Terra enters an existing Bedrock model portfolio.",
+      "recommended_action": "Run Terra against a frozen set of long-horizon coding and tool-use tasks, comparing task success, intervention rate, tool-call accuracy, latency, and completed-task cost with the current default model.",
+      "watchouts": "The reviewed AWS source establishes US West (Oregon) and US cross-Region inference, not universal regional availability. Native computer use increases the importance of sandboxing, approvals, and action-level audit.",
+      "confidence": "high",
+      "score": 20,
+      "citation_ids": [
+        "src-01"
+      ],
+      "prior_issue": null,
+      "new_delta": null
+    },
+    {
+      "id": "agentcore-cli-1-0-ga",
+      "title": "Amazon Bedrock AgentCore CLI 1.0 reaches general availability",
+      "status": "ga",
+      "event_date": "2026-10-28",
+      "availability": "Available in all AWS Regions where Amazon Bedrock AgentCore is offered; works with supported agent frameworks, models, and protocols including MCP and A2A.",
+      "what_changed": "AWS released AgentCore CLI 1.0 for local testing, cloud deployment, observability, evaluation, and operational inspection. AWS says the CLI supports framework-agnostic agents, MCP servers, and Agent2Agent-compatible agents.",
+      "why_it_matters": "AgentCore now has a stable command-line path that can be incorporated into repeatable developer and delivery workflows rather than relying on console-only operations or custom scripts.",
+      "platform_impact": "CLI version pinning, IAM roles, configuration files, generated infrastructure, deployment logs, and rollback behavior become part of the software supply chain and CI/CD contract.",
+      "recommended_action": "Pin version 1.0 in a disposable pipeline and deploy one non-production agent through configure, launch, invoke, status, logs, and destroy; record generated resources and required permissions.",
+      "watchouts": "General availability does not make generated defaults appropriate for every landing zone. Review IAM scope, network placement, telemetry retention, and cleanup behavior before standardizing the CLI.",
+      "confidence": "high",
+      "score": 20,
+      "citation_ids": [
+        "src-02"
+      ],
+      "prior_issue": null,
+      "new_delta": null
+    },
+    {
+      "id": "step-functions-agentcore-gateway-tools",
+      "title": "Step Functions workflows can be exposed as AgentCore Gateway tools",
+      "status": "ga",
+      "event_date": "2026-10-29",
+      "availability": "Available in all AWS Regions where Amazon Bedrock AgentCore Gateway is available, for existing Standard and Express Step Functions workflows.",
+      "what_changed": "AWS added native support for exposing Step Functions workflows as tools through AgentCore Gateway. Agents can start workflows, inspect execution status, retrieve results, and participate in task-token patterns such as human approval while Gateway handles workflow-to-MCP translation.",
+      "why_it_matters": "Teams can place deterministic orchestration, retries, approvals, and service integrations behind a governed agent tool boundary instead of granting an agent direct permissions to every underlying service.",
+      "platform_impact": "Workflow input schemas, execution names, task-token lifecycles, timeout handling, idempotency, and IAM boundaries become the contract between probabilistic agent decisions and deterministic business processes.",
+      "recommended_action": "Wrap one approval-bearing Standard workflow as a Gateway tool and test duplicate requests, invalid inputs, timeout, denial, retry, and audit reconstruction from the agent trace through the workflow execution.",
+      "watchouts": "Tool exposure does not make a workflow safe for autonomous invocation. Validate schemas, authorization, replay behavior, execution cost, and what data is returned to the model.",
+      "confidence": "high",
+      "score": 21,
+      "citation_ids": [
+        "src-03"
+      ],
+      "prior_issue": null,
+      "new_delta": null
+    },
+    {
+      "id": "mcp-reference-servers-security-hardening",
+      "title": "MCP reference servers ship two security-focused releases",
+      "status": "open_source",
+      "event_date": "2026-10-28",
+      "availability": "Patched releases are publicly available from the Model Context Protocol reference-servers repository; individual server packages have their own versioning and runtime requirements.",
+      "what_changed": "MCP reference servers v2.1.0 fixed filesystem boundary escapes, secret exposure, and server-side request forgery paths in the filesystem, everything, and fetch servers. Version 2.2.0 added credential masking, blocked non-public addresses across fetch hops, bounded filesystem walks, hardened Git repository confinement, and documented minimum patched Node.js versions.",
+      "why_it_matters": "These are common reference implementations for agent tools. Their fixes show that resource allowlists, redirect handling, process environments, symlinks, and repository boundaries cannot be delegated to tool descriptions or model behavior.",
+      "platform_impact": "AgentCore Gateway policy and IAM remain necessary but are not sufficient: the MCP server runtime, package version, egress policy, environment, filesystem mounts, and host runtime all need independent controls and inventory.",
+      "recommended_action": "Inventory every MCP server behind Gateway or used by Bedrock agents, identify reference-server derivatives, pin patched packages and runtimes, remove demo servers from production, and add SSRF plus path-escape tests.",
+      "watchouts": "Package naming and version tracks differ across npm and Python servers. The v2.2.0 notes also warn that an allowed Node engine range can still include an unpatched Node 24 runtime.",
+      "confidence": "high",
+      "score": 21,
+      "citation_ids": [
+        "src-04",
+        "src-05"
+      ],
+      "prior_issue": null,
+      "new_delta": null
+    },
+    {
+      "id": "github-agentic-workflows-ga",
+      "title": "GitHub Agentic Workflows reaches general availability",
+      "status": "ga",
+      "event_date": "2026-10-28",
+      "availability": "Available on GitHub Free, Team, and Enterprise plans; the default Copilot CLI engine requires a Copilot license, while bring-your-own-agent engines are supported.",
+      "what_changed": "GitHub made Agentic Workflows generally available. Markdown-authored workflows compile to standard GitHub Actions, with GA additions including Actions Runner Controller and Docker-in-Docker support, per-workflow model and provider selection, model routing, budget forecasting, and micro-VM isolation options.",
+      "why_it_matters": "Repository maintenance and delivery tasks can now combine agent reasoning with the existing Actions execution and policy surface rather than introducing a separate automation scheduler.",
+      "platform_impact": "For Bedrock and AgentCore repositories, this creates a new automation layer that must be governed alongside Actions permissions, OIDC roles, runner isolation, model budgets, network egress, and review of proposed writes.",
+      "recommended_action": "Pilot a read-only workflow that triages failed Bedrock or AgentCore integration tests and proposes a patch without merging it; measure false actions, token spend, runtime, and reviewer effort.",
+      "watchouts": "GitHub states workflows are read-only by default and use sandboxing and safe-output controls, but each repository still needs explicit permissions, budget caps, secret boundaries, and human approval for writes.",
+      "confidence": "high",
+      "score": 17,
+      "citation_ids": [
+        "src-06"
+      ],
+      "prior_issue": null,
+      "new_delta": null
+    },
+    {
+      "id": "nist-agent-identity-tenets",
+      "title": "NIST publishes ten design tenets for agent identity management",
+      "status": "open_source",
+      "event_date": "2026-10-27",
+      "availability": "Public, non-binding design guidance intended to inform implementation, evaluation, and future NCCoE demonstrations.",
+      "what_changed": "NIST published ten agent-identity design tenets: distinct cryptographically verifiable agent identities, bounded delegation, zero standing privilege, short-lived and revocable authorization, human-review triggers, signed mandates, separation of policy enforcement from reasoning, deterministic authorization, continuous monitoring, and tamper-evident audit evidence.",
+      "why_it_matters": "The guidance provides a concrete architecture-review baseline for replacing inherited user credentials and model-enforced guardrails with explicit machine identity, authorization, and evidence controls.",
+      "platform_impact": "AgentCore Identity, Gateway Policy, IAM roles, session credentials, Registry records, approval workflows, and immutable logging can be assessed against the same control objectives rather than as disconnected features.",
+      "recommended_action": "Map one production agent against all ten tenets and record the enforcing AWS component, evidence source, failure mode, and owner for each; treat any control implemented only inside prompts or model code as a gap.",
+      "watchouts": "This is design guidance, not a certification, regulation, or complete implementation profile. Product mappings and assurance levels still require workload-specific threat modeling and validation.",
+      "confidence": "high",
+      "score": 19,
+      "citation_ids": [
+        "src-07"
+      ],
+      "prior_issue": null,
+      "new_delta": null
+    }
+  ],
+  "devops_impacts": [
+    {
+      "area": "architecture",
+      "text": "Step Functions behind AgentCore Gateway creates a clean boundary between probabilistic planning and deterministic orchestration, but only if workflow inputs, retries, approvals, and idempotency are treated as versioned tool contracts.",
+      "citation_ids": [
+        "src-03"
+      ]
+    },
+    {
+      "area": "security",
+      "text": "MCP server approval must include implementation and runtime controls: patched packages, restricted egress, minimal process environments, bounded mounts, and path/SSRF tests—not only an allowlisted server name.",
+      "citation_ids": [
+        "src-04",
+        "src-05"
+      ]
+    },
+    {
+      "area": "developer-workflow",
+      "text": "AgentCore CLI 1.0 and GitHub Agentic Workflows make agent deployment and repository automation easier to standardize, while increasing the need to pin tools, inspect generated changes, and constrain CI identities and budgets.",
+      "citation_ids": [
+        "src-02",
+        "src-06"
+      ]
+    },
+    {
+      "area": "governance",
+      "text": "NIST’s identity tenets turn agent identity into an auditable control plane: separate identity from the user, minimize standing privilege, keep authorization deterministic, and retain tamper-evident evidence outside model control.",
+      "citation_ids": [
+        "src-07"
+      ]
+    },
+    {
+      "area": "cost",
+      "text": "A new long-horizon Bedrock model and agentic CI workflows should be evaluated on completed-task economics, including retries, tool calls, human interventions, runner time, and downstream workflow executions.",
+      "citation_ids": [
+        "src-01",
+        "src-06"
+      ]
+    }
+  ],
+  "bring_to_work": [
+    {
+      "title": "Terra model-routing bake-off",
+      "what": "Evaluate GPT-6.1 Terra on a frozen set of long-horizon coding and tool-use tasks.",
+      "fit": "Direct fit for Bedrock model portfolios and AgentCore workloads that already route among managed models.",
+      "effort": "medium",
+      "next_step": "Run 50 representative tasks and compare success, intervention rate, tool-call accuracy, p95 latency, and completed-task cost against the current default.",
+      "citation_ids": [
+        "src-01"
+      ]
+    },
+    {
+      "title": "AgentCore CLI pipeline rehearsal",
+      "what": "Exercise the 1.0 CLI from local configuration through deployment, invocation, logs, status, and teardown.",
+      "fit": "Direct fit for teams standardizing AgentCore delivery through CI/CD rather than ad hoc console operations.",
+      "effort": "low",
+      "next_step": "Use a sandbox account, pin the CLI version, capture required IAM actions and generated resources, and confirm destroy removes the expected infrastructure.",
+      "citation_ids": [
+        "src-02"
+      ]
+    },
+    {
+      "title": "Governed workflow tool pilot",
+      "what": "Expose one approval-bearing Step Functions workflow through AgentCore Gateway as an MCP tool.",
+      "fit": "Direct fit for Bedrock agents that need governed access to existing AWS business processes.",
+      "effort": "medium",
+      "next_step": "Test valid, denied, duplicate, malformed, timed-out, and replayed requests, then reconstruct the full audit path from agent decision to workflow result.",
+      "citation_ids": [
+        "src-03"
+      ]
+    },
+    {
+      "title": "MCP hardening sweep",
+      "what": "Inventory and test all MCP servers used by agents, starting with filesystem, fetch, Git, and demo/everything servers.",
+      "fit": "Direct fit for AgentCore Gateway and any Bedrock agent runtime that launches or calls MCP servers.",
+      "effort": "medium",
+      "next_step": "Start with filesystem, fetch, Git, and demo/everything servers in one representative agent workload; pin patched versions, verify host runtimes, remove ambient credentials, block metadata/private-network egress, and run path-escape tests.",
+      "citation_ids": [
+        "src-04",
+        "src-05"
+      ]
+    },
+    {
+      "title": "Agent identity control map",
+      "what": "Assess one production agent against NIST’s ten identity-management tenets.",
+      "fit": "Direct fit for AgentCore Identity, Gateway Policy, IAM, Registry, approvals, and audit design.",
+      "effort": "medium",
+      "next_step": "For each tenet, name the enforcing component, evidence source, revocation path, test case, and accountable owner; flag prompt-only enforcement as unresolved.",
+      "citation_ids": [
+        "src-07"
+      ]
+    }
+  ],
+  "watchouts": [
+    {
+      "text": "GPT-6.1 Terra availability is established for US West (Oregon) and US cross-Region inference; do not infer global in-Region availability or production suitability from the GA label alone.",
+      "citation_ids": [
+        "src-01"
+      ]
+    },
+    {
+      "text": "AgentCore CLI and agentic CI workflows can amplify deployment mistakes; pin versions, scope identities, require review for writes, and test rollback and teardown before broad adoption.",
+      "citation_ids": [
+        "src-02",
+        "src-06"
+      ]
+    },
+    {
+      "text": "Gateway and IAM controls do not repair a vulnerable MCP server. Package, runtime, filesystem, environment, and network boundaries require separate validation.",
+      "citation_ids": [
+        "src-04",
+        "src-05"
+      ]
+    },
+    {
+      "text": "NIST’s tenets are non-binding guidance. They provide a review framework, not proof that a particular AWS architecture meets a regulatory or assurance requirement.",
+      "citation_ids": [
+        "src-07"
+      ]
+    }
+  ],
+  "citations": [
+    {
+      "id": "src-01",
+      "title": "OpenAI GPT-6.1 Terra is now generally available on Amazon Bedrock",
+      "publisher": "Amazon Web Services",
+      "url": "https://aws.amazon.com/about-aws/whats-new/2026/10/openai-gpt-6-1-terra-on-amazon-bedrock/",
+      "published_at": "2026-10-26",
+      "source_type": "primary"
+    },
+    {
+      "id": "src-02",
+      "title": "Amazon Bedrock AgentCore CLI version 1.0 is now available",
+      "publisher": "Amazon Web Services",
+      "url": "https://aws.amazon.com/about-aws/whats-new/2026/10/amazon-bedrock-agentcore-cli-version-1-0-available/",
+      "published_at": "2026-10-28",
+      "source_type": "primary"
+    },
+    {
+      "id": "src-03",
+      "title": "AWS Step Functions workflows now available as AI agent tools",
+      "publisher": "Amazon Web Services",
+      "url": "https://aws.amazon.com/about-aws/whats-new/2026/10/step-functions-workflows-ai-agent-tools/",
+      "published_at": "2026-10-29",
+      "source_type": "primary"
+    },
+    {
+      "id": "src-04",
+      "title": "MCP reference servers v2.1.0",
+      "publisher": "Model Context Protocol",
+      "url": "https://github.com/modelcontextprotocol/servers/releases/tag/v2.1.0",
+      "published_at": "2026-10-25",
+      "source_type": "official-project"
+    },
+    {
+      "id": "src-05",
+      "title": "MCP reference servers v2.2.0",
+      "publisher": "Model Context Protocol",
+      "url": "https://github.com/modelcontextprotocol/servers/releases/tag/v2.2.0",
+      "published_at": "2026-10-28",
+      "source_type": "official-project"
+    },
+    {
+      "id": "src-06",
+      "title": "GitHub Agentic Workflows generally available",
+      "publisher": "GitHub",
+      "url": "https://github.blog/changelog/2026-10-28-github-agentic-workflows-generally-available/",
+      "published_at": "2026-10-28",
+      "source_type": "primary"
+    },
+    {
+      "id": "src-07",
+      "title": "Design Tenets for Agent Identity Management Systems",
+      "publisher": "National Institute of Standards and Technology",
+      "url": "https://www.nist.gov/blogs/cybersecurity-insights/design-tenets-agent-identity-management-systems",
+      "published_at": "2026-10-27",
+      "source_type": "government"
+    }
+  ],
+  "telegram_text": "# Weekly AI & Agentic Systems Digest — October 25–31, 2026\n\nThis week made agent systems more operable—and made their trust boundaries harder to ignore. AWS added a new Bedrock model, a production AgentCore CLI, and governed Step Functions tool exposure. MCP reference servers shipped urgent hardening, GitHub moved natural-language agentic workflows to general availability, and NIST published an identity baseline centered on bounded delegation and deterministic enforcement.\n\n## What changed\n\n**1. OpenAI GPT-6.1 Terra became generally available on Amazon Bedrock.** *Shipped — GA, October 26.* Terra is available in US West (Oregon) with US cross-Region inference and supports server-side tool use through the Responses API. AWS positions it for long-horizon software engineering, cybersecurity, mathematics, science, and finance. It gives Bedrock teams another managed candidate for coding and tool-use agents, but requires workload-specific comparison rather than a model-name upgrade.[1] [AWS](https://aws.amazon.com/about-aws/whats-new/2026/10/openai-gpt-6-1-terra-on-amazon-bedrock/)\n\n**2. Amazon Bedrock AgentCore CLI 1.0 reached general availability.** *Shipped — GA, October 28.* The CLI supports local testing, cloud deployment, observability, evaluation, logs, status, and operations for framework-agnostic agents, MCP servers, and Agent2Agent-compatible agents. This makes AgentCore delivery easier to standardize in CI/CD, while turning CLI versions, generated resources, IAM, and configuration into supply-chain inputs.[2] [AWS](https://aws.amazon.com/about-aws/whats-new/2026/10/amazon-bedrock-agentcore-cli-version-1-0-available/)\n\n**3. Step Functions workflows can now be AgentCore Gateway tools.** *Shipped — GA, October 29.* Existing Standard and Express workflows can be exposed through Gateway; agents can start executions, inspect status, retrieve results, and participate in task-token approval patterns. The architectural value is a governed boundary: probabilistic agents request deterministic workflows that retain retries, approvals, service integrations, and execution history.[3] [AWS](https://aws.amazon.com/about-aws/whats-new/2026/10/step-functions-workflows-ai-agent-tools/)\n\n**4. MCP reference servers shipped two security-focused releases.** *Published releases — October 25 and 28.* Version 2.1.0 fixed filesystem boundary escapes, secret exposure, and server-side request forgery paths. Version 2.2.0 added credential masking, blocked non-public addresses across fetch hops, bounded filesystem work, hardened Git confinement, and documented patched Node.js minimums. Gateway allowlisting does not make a vulnerable tool server safe.[4][5] [v2.1.0](https://github.com/modelcontextprotocol/servers/releases/tag/v2.1.0) · [v2.2.0](https://github.com/modelcontextprotocol/servers/releases/tag/v2.2.0)\n\n**5. GitHub Agentic Workflows reached general availability.** *Shipped — GA, October 28.* Markdown workflows compile to standard GitHub Actions. GA adds Actions Runner Controller and Docker-in-Docker support, per-workflow model/provider selection, model routing, budget forecasting, and micro-VM isolation options. For Bedrock repositories, this creates a useful automation layer—and another place to control OIDC roles, runner isolation, egress, model budgets, and proposed writes.[6] [GitHub](https://github.blog/changelog/2026-10-28-github-agentic-workflows-generally-available/)\n\n**6. NIST published ten agent identity-management design tenets.** *Published guidance, October 27.* The tenets call for distinct cryptographically verifiable agent identities, bounded delegation, zero standing privilege, short-lived and revocable authorization, human-review triggers, signed mandates, separation of policy from reasoning, deterministic access decisions, continuous monitoring, and tamper-evident evidence. This is a practical architecture-review baseline for AgentCore Identity, Gateway Policy, IAM, Registry, and audit design.[7] [NIST](https://www.nist.gov/blogs/cybersecurity-insights/design-tenets-agent-identity-management-systems)\n\n## DevOps / platform impact\n\n- **Architecture:** Put Step Functions behind Gateway when an agent needs a governed business process; version input schemas, retries, approvals, idempotency, and returned data.[3]\n- **Security:** Approve MCP implementations and runtimes—not only server names. Pin patches, restrict egress and mounts, minimize process environments, and test SSRF and path escapes.[4][5]\n- **Developer workflow:** AgentCore CLI and Agentic Workflows can standardize deployment and repository automation, but must be pinned, reviewed, budgeted, and isolated.[2][6]\n- **Governance:** Treat identity, delegation, authorization, revocation, and evidence as an external control plane; prompt instructions are not an authorization system.[7]\n- **Cost:** Evaluate Terra and agentic CI on completed-task economics, including retries, tool calls, runner time, and human interventions.[1][6]\n\n## Bring to work\n\n**Terra model-routing bake-off — medium effort.** Direct Bedrock fit. Run 50 frozen coding and tool-use tasks; compare success, intervention rate, tool accuracy, p95 latency, and completed-task cost with the current default.[1]\n\n**AgentCore CLI pipeline rehearsal — low effort.** Direct AgentCore fit. In a sandbox account, pin 1.0 and exercise configure, launch, invoke, status, logs, and destroy; capture IAM actions and generated resources.[2]\n\n**Governed workflow tool pilot — medium effort.** Direct Gateway fit. Expose one approval-bearing Step Functions workflow and test valid, denied, duplicate, malformed, timed-out, and replayed requests.[3]\n\n**MCP hardening sweep — medium effort.** Direct fit for Gateway and agent runtimes. Start with filesystem, fetch, Git, and demo servers in one representative agent workload; patch packages and runtimes, remove ambient credentials, block metadata egress, and run path-escape tests.[4][5]\n\n**Agent identity control map — medium effort.** Direct fit for Identity, Gateway Policy, IAM, Registry, approvals, and audit. Map one production agent to all ten NIST tenets and identify the enforcing component and evidence for each.[7]\n\n## Watchouts\n\n- Terra availability is established for US West (Oregon) and US cross-Region inference; do not infer global in-Region availability.[1]\n- CLI-generated defaults and agentic workflow sandboxes still need landing-zone, IAM, network, rollback, and cleanup review.[2][6]\n- Gateway and IAM controls do not repair vulnerable MCP code or unsafe host runtimes.[4][5]\n- NIST’s tenets are non-binding guidance, not certification or proof of regulatory compliance.[7]\n\n## Sources\n\n[1] https://aws.amazon.com/about-aws/whats-new/2026/10/openai-gpt-6-1-terra-on-amazon-bedrock/\n[2] https://aws.amazon.com/about-aws/whats-new/2026/10/amazon-bedrock-agentcore-cli-version-1-0-available/\n[3] https://aws.amazon.com/about-aws/whats-new/2026/10/step-functions-workflows-ai-agent-tools/\n[4] https://github.com/modelcontextprotocol/servers/releases/tag/v2.1.0\n[5] https://github.com/modelcontextprotocol/servers/releases/tag/v2.2.0\n[6] https://github.blog/changelog/2026-10-28-github-agentic-workflows-generally-available/\n[7] https://www.nist.gov/blogs/cybersecurity-insights/design-tenets-agent-identity-management-systems\n\nWeb publication: published and verified."
+}
