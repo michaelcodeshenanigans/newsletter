@@ -2,6 +2,18 @@
   "version": 1,
   "issues": [
     {
+      "issue_id": "2026-11-14",
+      "revision": 1,
+      "title": "Weekly AI & Agentic Systems Digest — November 8–14, 2026",
+      "coverage": {
+        "start": "2026-11-08",
+        "end": "2026-11-14"
+      },
+      "published_at": "2026-11-14T12:11:55+02:00",
+      "path": "issues/2026-11-14.md",
+      "content_hash": "3f1cf9624bd59f40c05157720942b15ab06ae356903569b5b8c3badcbdad018d"
+    },
+    {
       "issue_id": "2026-11-07",
       "revision": 1,
       "title": "Weekly AI & Agentic Systems Digest — November 1–7, 2026",
